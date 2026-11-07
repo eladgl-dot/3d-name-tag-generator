@@ -1,0 +1,8 @@
+﻿bin/
+obj/
+dist/
+.vs/
+*.user
+# Project reference copy of the old app is kept only in the ZIP.
+source_zip/
+3d-name-tag-generator.zip

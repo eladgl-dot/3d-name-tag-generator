@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 256 256" role="img" aria-label="3D name tag generator logo">
+  <title>3D name tag generator</title>
+  <!-- Depth of the blue base -->
+  <g fill="#1570C9" transform="translate(0 14)">
+    <rect x="16" y="62" width="224" height="170" rx="46"/>
+    <path fill-rule="evenodd" d="M198 14a32 32 0 1 0 0 64a32 32 0 1 0 0-64Zm0 18a14 14 0 1 1 0 28a14 14 0 1 1 0-28Z"/>
+  </g>
+  <!-- Top of the blue base, with the keyring hole -->
+  <g fill="#1E90FF">
+    <rect x="16" y="62" width="224" height="170" rx="46"/>
+    <path fill-rule="evenodd" d="M198 14a32 32 0 1 0 0 64a32 32 0 1 0 0-64Zm0 18a14 14 0 1 1 0 28a14 14 0 1 1 0-28Z"/>
+  </g>
+  <!-- Raised letters: side, then top -->
+  <g fill="none" stroke-width="24" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#B9C9DC" transform="translate(0 8)">
+      <path d="M50 96H100L76 130C104 126 116 146 108 164C100 184 66 186 48 170"/>
+      <path d="M142 96V178H154C204 178 204 96 154 96Z"/>
+    </g>
+    <g stroke="#FFFFFF">
+      <path d="M50 96H100L76 130C104 126 116 146 108 164C100 184 66 186 48 170"/>
+      <path d="M142 96V178H154C204 178 204 96 154 96Z"/>
+    </g>
+  </g>
+</svg>

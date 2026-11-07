@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>NameTagGenerator</RootNamespace>
+    <AssemblyName>NameTagGenerator</AssemblyName>
+    <Product>3D name tag generator</Product>
+    <AssemblyTitle>3D name tag generator</AssemblyTitle>
+    <Version>0.1.0</Version>
+    <ApplicationIcon>..\..\assets\logo.ico</ApplicationIcon>
+    <!-- Keep working when a newer .NET is installed instead of .NET 10. -->
+    <RollForward>Major</RollForward>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- ThemeMode (built-in Fluent look) is marked as evaluation only. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+
+  <!-- dotnet publish: one small EXE that uses the installed .NET Desktop runtime. -->
+  <PropertyGroup Condition="'$(_IsPublishing)' == 'true'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>false</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <DebugType>none</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Clipper2" Version="2.0.0" />
+    <PackageReference Include="LibTessDotNet" Version="1.1.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\..\assets\logo.ico" Link="logo.ico" />
+    <EmbeddedResource Include="..\..\assets\fonts\*.ttf;..\..\assets\fonts\*.otf" LogicalName="font:%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Give the published EXE the app's real name. -->
+  <Target Name="RenamePublishedExe" AfterTargets="Publish">
+    <Move SourceFiles="$(PublishDir)NameTagGenerator.exe" DestinationFiles="$(PublishDir)3D name tag generator.exe" />
+  </Target>
+
+</Project>

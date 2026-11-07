@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview colours mockup</title>
+<style>
+:root {
+  --bg: #f3f4f6; --panel: #ffffff; --field: #f3f4f6; --line: #dfe2e7; --text: #1b1f27; --muted: #5d6573;
+  --accent: #0f6cbd; --viewport: #e8ebf0; --r: 8px; --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17191d; --panel: #212429; --field: #2b2f36; --line: #363b44; --text: #eceef2; --muted: #a2a9b6;
+    --accent: #4aa3ee; --viewport: #15171b;
+  }
+}
+* { box-sizing: border-box; }
+html { color-scheme: light dark; }
+body { margin: 0; padding: var(--s4); background: var(--bg); color: var(--text); font: 14px/1.4 "Segoe UI", Tahoma, Arial, sans-serif; }
+.frame { max-width: 860px; margin: 0 auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); padding: var(--s2) var(--s3); border-bottom: 1px solid var(--line); }
+.chip { border: 1px solid var(--line); background: var(--field); color: var(--text); font: inherit; padding: 4px 12px; border-radius: 999px; }
+.chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.spacer { flex: 1; }
+.colour { display: flex; align-items: center; gap: var(--s2); border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; padding: 3px 10px 3px 4px; border-radius: var(--r); cursor: pointer; }
+.colour:hover, .colour[aria-expanded="true"] { border-color: var(--accent); }
+.colour i { width: 22px; height: 22px; border-radius: 6px; border: 1px solid #0004; display: block; }
+.swap { border: 1px solid var(--line); background: var(--panel); color: var(--text); font: inherit; width: 32px; height: 32px; border-radius: var(--r); cursor: pointer; }
+.swap:hover { border-color: var(--accent); }
+.stage { position: relative; background: var(--viewport); height: 380px; display: flex; align-items: center; justify-content: center; }
+.stage svg { width: min(620px, 92%); height: auto; }
+.pop { position: absolute; top: var(--s2); inset-inline-end: var(--s3); width: 252px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px #0004; padding: var(--s3); }
+.pop[hidden] { display: none; }
+.pop h3 { margin: 0 0 var(--s2); font-size: 14px; font-weight: 600; }
+.grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.grid button { aspect-ratio: 1; border-radius: 6px; border: 1px solid #0004; cursor: pointer; padding: 0; }
+.grid button.on { outline: 2px solid var(--accent); outline-offset: 2px; }
+.custom { display: flex; align-items: center; gap: var(--s2); margin-top: var(--s3); color: var(--muted); }
+.custom input { width: 44px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+.status { padding: var(--s2) var(--s3); border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+.notes { max-width: 860px; margin: var(--s4) auto 0; color: var(--muted); }
+.notes li { margin-bottom: var(--s1); }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="bar">
+    <span class="chip on">This name</span>
+    <span class="chip">All names</span>
+    <span class="spacer"></span>
+    <button class="colour" id="baseBtn" aria-expanded="false"><i id="baseChip"></i>Base</button>
+    <button class="colour" id="lettersBtn" aria-expanded="false"><i id="lettersChip"></i>Letters</button>
+    <button class="swap" id="swap" title="Swap the two colours" aria-label="Swap the two colours">⇄</button>
+    <span class="chip">Reset view</span>
+  </div>
+  <div class="stage">
+    <svg viewBox="0 0 620 240" role="img" aria-label="Name tag preview">
+      <g id="baseSide"><rect x="46" y="62" width="500" height="150" rx="52"/><circle cx="552" cy="124" r="44"/></g>
+      <g id="baseTop"><rect x="46" y="44" width="500" height="150" rx="52"/><circle cx="552" cy="106" r="44"/></g>
+      <circle cx="552" cy="106" r="19" fill="var(--viewport)"/>
+      <text id="lettersSide" x="296" y="166" text-anchor="middle" direction="rtl" font-size="104" font-weight="700" font-family="Arial, sans-serif">נויה</text>
+      <text id="lettersTop" x="296" y="154" text-anchor="middle" direction="rtl" font-size="104" font-weight="700" font-family="Arial, sans-serif">נויה</text>
+    </svg>
+    <div class="pop" id="pop" hidden>
+      <h3 id="popTitle">Base colour</h3>
+      <div class="grid" id="grid"></div>
+      <label class="custom">Any colour <input type="color" id="custom"></label>
+    </div>
+  </div>
+  <div class="status">62 × 34 × 7 mm · 1 name · up to 8.4 g PETG</div>
+</div>
+<ul class="notes">
+  <li>Click Base or Letters, then pick a colour. The 3D preview changes at once. Try it above.</li>
+  <li>⇄ swaps the two colours.</li>
+  <li>The app remembers your colours. They change only the preview, not the saved file.</li>
+  <li>The 3D model in the real app is the rotating one; this picture only shows the colours.</li>
+</ul>
+<script>
+const palette = [
+  ["White", "#F4F6F8"], ["Black", "#1B1D20"], ["Grey", "#8A8F96"], ["Red", "#D0312D"], ["Orange", "#F28C28"], ["Yellow", "#F5D327"],
+  ["Green", "#2E9E4F"], ["Mint", "#7FD8BE"], ["Blue", "#1E90FF"], ["Navy", "#1F3A7A"], ["Purple", "#7B4FB5"], ["Pink", "#F29BC0"],
+];
+const shade = (hex, f) => "#" + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * f).toString(16).padStart(2, "0")).join("");
+const state = { base: "#1E90FF", letters: "#F4F6F8", editing: null };
+const $ = id => document.getElementById(id);
+
+function paint() {
+  $("baseTop").setAttribute("fill", state.base);
+  $("baseSide").setAttribute("fill", shade(state.base, .72));
+  $("lettersTop").setAttribute("fill", state.letters);
+  $("lettersSide").setAttribute("fill", shade(state.letters, .72));
+  $("baseChip").style.background = state.base;
+  $("lettersChip").style.background = state.letters;
+  document.querySelectorAll("#grid button").forEach(b =>
+    b.classList.toggle("on", state.editing !== null && b.dataset.hex === state[state.editing]));
+}
+
+function openFor(part) {
+  const closing = state.editing === part;
+  state.editing = closing ? null : part;
+  $("pop").hidden = closing;
+  $("baseBtn").setAttribute("aria-expanded", String(state.editing === "base"));
+  $("lettersBtn").setAttribute("aria-expanded", String(state.editing === "letters"));
+  if (!closing) {
+    $("popTitle").textContent = part === "base" ? "Base colour" : "Letters colour";
+    $("custom").value = state[part].toLowerCase();
+  }
+  paint();
+}
+
+palette.forEach(([name, hex]) => {
+  const b = document.createElement("button");
+  b.style.background = hex; b.title = name; b.setAttribute("aria-label", name); b.dataset.hex = hex;
+  b.onclick = () => { state[state.editing] = hex; $("custom").value = hex.toLowerCase(); paint(); };
+  $("grid").append(b);
+});
+$("custom").oninput = e => { state[state.editing] = e.target.value.toUpperCase(); paint(); };
+$("baseBtn").onclick = () => openFor("base");
+$("lettersBtn").onclick = () => openFor("letters");
+$("swap").onclick = () => { [state.base, state.letters] = [state.letters, state.base]; paint(); };
+paint();
+</script>
+</body>
+</html>

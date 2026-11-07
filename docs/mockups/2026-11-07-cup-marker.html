@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cup marker options</title>
+<style>
+:root {
+  --bg: #f3f4f6; --panel: #ffffff; --line: #dfe2e7; --text: #1b1f27; --muted: #5d6573; --accent: #0f6cbd;
+  --cup: #9aa1ad; --part: #1e90ff; --letter: #ffffff; --bad: #c42b1c; --r: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17191d; --panel: #212429; --line: #363b44; --text: #eceef2; --muted: #a2a9b6; --accent: #4aa3ee; --cup: #7c8491; --bad: #ff7b6b;
+  }
+}
+* { box-sizing: border-box; }
+html { color-scheme: light dark; }
+body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font: 14px/1.45 "Segoe UI", Tahoma, Arial, sans-serif; }
+main { max-width: 1040px; margin: 0 auto; }
+h1 { font-size: 20px; margin: 0 0 4px; }
+.lead { color: var(--muted); margin: 0 0 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; }
+.card.pick { border: 2px solid var(--accent); }
+.card h2 { font-size: 15px; margin: 0 0 8px; }
+.badge { font-size: 12px; font-weight: 600; color: var(--accent); }
+.views { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+figure { margin: 0; }
+figcaption { font-size: 12px; color: var(--muted); text-align: center; }
+svg { width: 100%; height: auto; display: block; }
+.wall { fill: var(--cup); }
+.rim { fill: none; stroke: var(--cup); stroke-width: 7; }
+.part { fill: var(--part); }
+.band { fill: none; stroke: var(--part); }
+.name { fill: var(--letter); font: 700 15px "Segoe UI", Tahoma, Arial, sans-serif; text-anchor: middle; direction: rtl; }
+.mark { stroke: var(--bad); stroke-width: 2; fill: none; }
+.note { fill: var(--bad); font: 600 11px "Segoe UI", Tahoma, Arial, sans-serif; text-anchor: middle; }
+ul { margin: 0; padding-inline-start: 18px; }
+li { margin-bottom: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cup marker: how it could hold on</h1>
+  <p class="lead">Sketches, not to scale. Grey is the cup, blue is the printed part.</p>
+  <div class="grid">
+
+    <section class="card">
+      <h2>Today: slot across the rim</h2>
+      <div class="views">
+        <figure>
+          <svg viewBox="0 0 160 120" role="img" aria-label="From above, a thin plate crosses the rim">
+            <circle class="rim" cx="80" cy="150" r="100"/>
+            <rect class="part" x="77" y="8" width="6" height="58"/>
+            <circle class="mark" cx="80" cy="50" r="12"/>
+            <text class="note" x="122" y="42">only 3 mm</text>
+          </svg>
+          <figcaption>From above</figcaption>
+        </figure>
+        <figure>
+          <svg viewBox="0 0 160 120" role="img" aria-label="Cut through the rim, the name sticks out from a small slot">
+            <rect class="wall" x="52" y="42" width="8" height="78"/>
+            <path class="part" d="M42 14 H150 V38 H70 V72 H64 V30 H48 V72 H42 Z"/>
+            <text class="name" x="108" y="32">נויה</text>
+          </svg>
+          <figcaption>Cut through the rim</figcaption>
+        </figure>
+      </div>
+      <ul>
+        <li>The name's weight sits off to one side, held by 3 mm.</li>
+        <li>It can rock sideways along the rim, so it works loose. You are right.</li>
+      </ul>
+    </section>
+
+    <section class="card pick">
+      <h2>A. Saddle along the rim <span class="badge">Recommended</span></h2>
+      <div class="views">
+        <figure>
+          <svg viewBox="0 0 160 120" role="img" aria-label="From above, a curved plate follows the rim">
+            <circle class="rim" cx="80" cy="150" r="100"/>
+            <path class="band" stroke-width="30" d="M38 62 A100 100 0 0 1 122 62"/>
+            <text class="name" x="80" y="56">נויה</text>
+          </svg>
+          <figcaption>From above</figcaption>
+        </figure>
+        <figure>
+          <svg viewBox="0 0 160 120" role="img" aria-label="Cut through the rim, a plate sits on top with two walls either side of the cup wall">
+            <rect class="wall" x="76" y="30" width="8" height="90"/>
+            <path class="part" d="M40 14 H110 V30 H92 V66 H86 V30 H74 V54 H68 V30 H40 Z"/>
+          </svg>
+          <figcaption>Cut through the rim</figcaption>
+        </figure>
+      </div>
+      <ul>
+        <li>A curved groove grips 25 mm or more of rim, so it cannot rock.</li>
+        <li>The name sits on top, and you read it from above.</li>
+        <li>You set Cup diameter (default 80 mm) and Rim thickness.</li>
+        <li>Prints upside down with no supports. Letters sit flush in the face rather than raised.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>B. Sign hooked over the rim</h2>
+      <div class="views">
+        <figure>
+          <svg viewBox="0 0 160 120" role="img" aria-label="From above, a straight plate sits outside the rim">
+            <circle class="rim" cx="80" cy="150" r="100"/>
+            <rect class="part" x="40" y="34" width="80" height="8"/>
+          </svg>
+          <figcaption>From above</figcaption>
+        </figure>
+        <figure>
+          <svg viewBox="0 0 160 120" role="img" aria-label="Cut through the rim, a hook goes over the wall and a plate hangs outside">
+            <rect class="wall" x="66" y="30" width="8" height="90"/>
+            <path class="part" d="M56 18 H96 V96 H86 V30 H62 V62 H56 Z"/>
+          </svg>
+          <figcaption>Cut through the rim</figcaption>
+        </figure>
+      </div>
+      <ul>
+        <li>Reads from the side, like a label on the cup. This is the nicest to look at.</li>
+        <li>Must print standing on its side, so small letters come out rougher.</li>
+        <li>Colour changes on every layer: slow, with more filament waste.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>C. Clip on the handle</h2>
+      <div class="views">
+        <figure>
+          <svg viewBox="0 0 160 120" role="img" aria-label="Side of a mug with a clip on its handle">
+            <rect class="wall" x="10" y="14" width="66" height="100" rx="4"/>
+            <path d="M76 34 H104 Q116 34 116 46 V82 Q116 94 104 94 H76" fill="none" stroke="var(--cup)" stroke-width="9"/>
+            <rect class="part" x="104" y="52" width="50" height="24" rx="4"/>
+            <text class="name" x="132" y="69">נויה</text>
+          </svg>
+          <figcaption>From the side</figcaption>
+        </figure>
+        <figure>
+          <svg viewBox="0 0 160 120" role="img" aria-label="The clip snaps around the handle">
+            <path class="part" d="M30 30 H110 V90 H30 V70 H44 V76 H96 V44 H44 V50 H30 Z"/>
+            <rect class="wall" x="52" y="50" width="38" height="20" rx="4"/>
+          </svg>
+          <figcaption>Clip around the handle</figcaption>
+        </figure>
+      </div>
+      <ul>
+        <li>Prints flat with raised letters, the simplest of the three to build.</li>
+        <li>Mugs only. It does nothing for a cup without a handle.</li>
+        <li>You set the handle's size, because handles vary a lot.</li>
+      </ul>
+    </section>
+
+  </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,151 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:NameTagGenerator.ViewModels">
+
+    <!-- Tokens -->
+    <SolidColorBrush x:Key="ViewportBrush" Color="#23262B" />
+    <SolidColorBrush x:Key="ViewportTextBrush" Color="#C7CCD4" />
+    <SolidColorBrush x:Key="SwitchOnBrush" Color="#0F6CBD" />
+    <SolidColorBrush x:Key="SwitchOffBrush" Color="#8A8F98" />
+    <SolidColorBrush x:Key="WarningBrush" Color="#C8730A" />
+    <SolidColorBrush x:Key="InvalidBrush" Color="#D13438" />
+    <Thickness x:Key="SectionGap">0,0,0,20</Thickness>
+    <Thickness x:Key="FieldGap">0,0,8,8</Thickness>
+
+    <BooleanToVisibilityConverter x:Key="BoolToVisible" />
+    <vm:TextFlowConverter x:Key="TextFlow" />
+    <vm:NotConverter x:Key="Not" />
+
+    <Style x:Key="SectionHeading" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource LabelFontSize}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Opacity" Value="0.75" />
+        <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+
+    <Style x:Key="FieldLabel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource LabelFontSize}" />
+        <Setter Property="Opacity" Value="0.8" />
+        <Setter Property="Margin" Value="0,0,0,2" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+
+    <!-- On/off switch -->
+    <Style x:Key="SwitchStyle" TargetType="CheckBox">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Focusable" Value="True" />
+        <!-- A restyled control loses the theme's text colour, so take the window's. -->
+        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter VerticalAlignment="Center" Margin="0,0,8,0" TextElement.Foreground="{TemplateBinding Foreground}" />
+                        <Border x:Name="Track" Grid.Column="1" Width="36" Height="20" CornerRadius="10"
+                                Background="{StaticResource SwitchOffBrush}" VerticalAlignment="Center">
+                            <Ellipse x:Name="Knob" Width="14" Height="14" Fill="White" HorizontalAlignment="Left" Margin="3,0" />
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource SwitchOnBrush}" />
+                            <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" />
+                            <Setter TargetName="Track" Property="BorderThickness" Value="1" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Track" Property="Opacity" Value="0.9" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Anything floating above the window -->
+    <Style x:Key="FloatingPanel" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SolidBackgroundFillColorBaseBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource ControlStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="Margin" Value="8" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="16" ShadowDepth="4" Direction="270" Opacity="0.35" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- One choice out of a few, all visible at once -->
+    <Style x:Key="ChoiceChip" TargetType="RadioButton">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="Margin" Value="0,0,4,4" />
+        <Setter Property="Padding" Value="4,6" />
+        <Setter Property="FontSize" Value="{DynamicResource LabelFontSize}" />
+        <!-- A restyled control loses the theme's text colour, so take the window's. -->
+        <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Window}}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Chip" CornerRadius="6" BorderThickness="1" Padding="{TemplateBinding Padding}"
+                            Background="{DynamicResource ControlFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.Foreground="{TemplateBinding Foreground}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chip" Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="Chip" Property="BorderBrush" Value="{Binding Foreground, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chip" Property="Background" Value="{StaticResource SwitchOnBrush}" />
+                            <Setter TargetName="Chip" Property="BorderBrush" Value="{StaticResource SwitchOnBrush}" />
+                            <Setter Property="Foreground" Value="White" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- The settings panel is generated: one template per kind of field. -->
+    <DataTemplate DataType="{x:Type vm:NumberFieldVm}">
+        <StackPanel Margin="{StaticResource FieldGap}">
+            <TextBlock Style="{StaticResource FieldLabel}" Text="{Binding Label}" ToolTip="{Binding Label}" />
+            <TextBox x:Name="Box" Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}" />
+        </StackPanel>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsValid}" Value="False">
+                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource InvalidBrush}" />
+                <Setter TargetName="Box" Property="ToolTip" Value="This value is not valid, so the last good value is still used." />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ToggleFieldVm}">
+        <CheckBox Style="{StaticResource SwitchStyle}" IsChecked="{Binding Value}" Margin="{StaticResource FieldGap}">
+            <TextBlock Text="{Binding Label}" TextWrapping="Wrap" />
+        </CheckBox>
+    </DataTemplate>
+
+    <DataTemplate DataType="{x:Type vm:ChoiceFieldVm}">
+        <StackPanel Margin="{StaticResource FieldGap}">
+            <TextBlock Style="{StaticResource FieldLabel}" Text="{Binding Label}" ToolTip="{Binding Label}" />
+            <ComboBox ItemsSource="{Binding Choices}" SelectedIndex="{Binding Index}" HorizontalAlignment="Stretch" />
+        </StackPanel>
+    </DataTemplate>
+
+    <ItemsPanelTemplate x:Key="TwoColumns">
+        <UniformGrid Columns="2" VerticalAlignment="Top" />
+    </ItemsPanelTemplate>
+</ResourceDictionary>

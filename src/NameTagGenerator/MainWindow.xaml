@@ -1,0 +1,210 @@
+﻿<Window x:Class="NameTagGenerator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:NameTagGenerator.Views"
+        Title="3D name tag generator" Icon="pack://application:,,,/logo.ico"
+        Width="1180" Height="760" MinWidth="820" MinHeight="520" WindowStartupLocation="CenterScreen">
+    <Window.InputBindings>
+        <KeyBinding Key="F1" Command="{Binding HelpCommand}" CommandParameter="start" />
+    </Window.InputBindings>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0">
+            <MenuItem Header="_Help">
+                <MenuItem Header="_Quick start" InputGestureText="F1" Command="{Binding HelpCommand}" CommandParameter="start" />
+                <MenuItem Header="What each _setting does" Command="{Binding HelpCommand}" CommandParameter="settings" />
+                <MenuItem Header="_Arranging an array" Command="{Binding HelpCommand}" CommandParameter="arrange" />
+                <MenuItem Header="_Hebrew and fonts" Command="{Binding HelpCommand}" CommandParameter="fonts" />
+                <MenuItem Header="_Printing in two colours" Command="{Binding HelpCommand}" CommandParameter="bambu" />
+                <MenuItem Header="_Mouse and keyboard" Command="{Binding HelpCommand}" CommandParameter="keys" />
+                <MenuItem Header="_Troubleshooting" Command="{Binding HelpCommand}" CommandParameter="trouble" />
+                <Separator />
+                <MenuItem Header="A_bout" Command="{Binding HelpCommand}" CommandParameter="about" />
+            </MenuItem>
+        </Menu>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="{DynamicResource SidePanelWidth}" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="16">
+                    <!-- Item -->
+                    <StackPanel Margin="{StaticResource SectionGap}">
+                        <TextBlock Style="{StaticResource SectionHeading}" Text="Item" />
+                        <ComboBox ItemsSource="{Binding Items}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedItem}" HorizontalAlignment="Stretch" AutomationProperties.Name="Item" />
+                    </StackPanel>
+
+                    <!-- Names -->
+                    <StackPanel Margin="{StaticResource SectionGap}">
+                        <TextBlock Style="{StaticResource SectionHeading}" Text="Names" />
+                        <Grid>
+                            <TextBox x:Name="NameBox" Text="{Binding NewNames, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" AcceptsTab="True"
+                                     MinHeight="64" MaxHeight="160" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" TextChanged="OnNameBoxChanged"
+                                     AutomationProperties.Name="Names to add">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Enter" Modifiers="Ctrl" Command="{Binding AddNamesCommand}" />
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <TextBlock Text="Type a name or paste from Excel" Margin="12,6" Opacity="0.6" IsHitTestVisible="False" TextWrapping="Wrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding NewNames}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        <DockPanel Margin="0,8,0,8">
+                            <Button DockPanel.Dock="Right" Content="Clear list" Command="{Binding ClearNamesCommand}" Margin="8,0,0,0" />
+                            <Button DockPanel.Dock="Right" Content="Add" Command="{Binding AddNamesCommand}" />
+                            <TextBlock Text="Ctrl+Enter to add" FontSize="{DynamicResource LabelFontSize}" Opacity="0.75" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        </DockPanel>
+                        <ListBox ItemsSource="{Binding Names}" SelectedIndex="{Binding SelectedIndex}" MaxHeight="{DynamicResource NamesListHeight}" HorizontalContentAlignment="Stretch"
+                                 VirtualizingPanel.IsVirtualizing="True" AutomationProperties.Name="Names">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Content="×" Padding="8,0" ToolTip="Remove" AutomationProperties.Name="Remove"
+                                                Command="{Binding DataContext.RemoveNameCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                CommandParameter="{Binding}" />
+                                        <TextBlock Text="{Binding}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                   FlowDirection="{Binding Converter={StaticResource TextFlow}}" />
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+
+                    <!-- Text -->
+                    <StackPanel Margin="{StaticResource SectionGap}">
+                        <TextBlock Style="{StaticResource SectionHeading}" Text="Text" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="Font" />
+                        <ComboBox ItemsSource="{Binding FontsView}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedFont}"
+                                  HorizontalAlignment="Stretch" MaxDropDownHeight="420" AutomationProperties.Name="Font">
+                            <ComboBox.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.HeaderTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}" FontSize="{DynamicResource LabelFontSize}" FontWeight="SemiBold" Opacity="0.75" Margin="8,8,8,4" />
+                                        </DataTemplate>
+                                    </GroupStyle.HeaderTemplate>
+                                </GroupStyle>
+                            </ComboBox.GroupStyle>
+                        </ComboBox>
+                        <DockPanel Margin="0,8,0,12">
+                            <Button DockPanel.Dock="Right" Content="Add font file…" Command="{Binding AddFontCommand}" />
+                            <CheckBox Style="{StaticResource SwitchStyle}" IsChecked="{Binding Bold}" Margin="0,0,16,0">
+                                <TextBlock Text="Bold" />
+                            </CheckBox>
+                        </DockPanel>
+                        <ItemsControl ItemsSource="{Binding TextFields}" ItemsPanel="{StaticResource TwoColumns}" />
+                    </StackPanel>
+
+                    <!-- Connector -->
+                    <StackPanel Margin="{StaticResource SectionGap}">
+                        <TextBlock Style="{StaticResource SectionHeading}" Text="Between two words" />
+                        <TextBlock Style="{StaticResource FieldLabel}" Text="Connector" />
+                        <ComboBox ItemsSource="{Binding Connectors}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding ConnectorValue}"
+                                  HorizontalAlignment="Stretch" Margin="0,0,0,8" AutomationProperties.Name="Connector" />
+                        <CheckBox Style="{StaticResource SwitchStyle}" IsChecked="{Binding IsHollow}" Margin="0,0,0,8">
+                            <TextBlock Text="Hollow (base colour only)" />
+                        </CheckBox>
+                        <ItemsControl ItemsSource="{Binding ConnectorFields}" Visibility="{Binding IsHollow, Converter={StaticResource BoolToVisible}}" />
+                    </StackPanel>
+
+                    <!-- Item settings: generated from the item's own fields -->
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SectionHeading}" Text="{Binding SelectedItem.Name}" />
+                        <ItemsControl ItemsSource="{Binding ItemFields}" ItemsPanel="{StaticResource TwoColumns}" />
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <views:PreviewView x:Name="Preview" Grid.Row="0" Model="{Binding PreviewModel}" />
+
+                <Border x:Name="PreviewBar" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="12" Padding="8,4" CornerRadius="6"
+                        Background="{DynamicResource SolidBackgroundFillColorBaseBrush}">
+                    <WrapPanel Orientation="Horizontal">
+                        <RadioButton Content="This name" GroupName="PreviewMode" IsChecked="{Binding PreviewOne}" MinWidth="0" Margin="0,0,12,0" VerticalContentAlignment="Center" VerticalAlignment="Center" />
+                        <RadioButton Content="All names" GroupName="PreviewMode" IsChecked="{Binding PreviewAll}" MinWidth="0" Margin="0,0,12,0" VerticalContentAlignment="Center" VerticalAlignment="Center" />
+                        <!-- Hit testing is off while open, so a click on the button closes the menu instead of closing and reopening it. -->
+                        <ToggleButton x:Name="ArrangeButton" Content="Arrange ▾" Command="{Binding ShowAllNamesCommand}" Margin="0,0,12,0" VerticalAlignment="Center"
+                                      IsHitTestVisible="{Binding IsOpen, ElementName=ArrangePopup, Converter={StaticResource Not}}" />
+                        <Popup x:Name="ArrangePopup" PlacementTarget="{Binding ElementName=Preview}" Placement="Relative" StaysOpen="False" AllowsTransparency="True"
+                               IsOpen="{Binding IsChecked, ElementName=ArrangeButton, Mode=TwoWay}" Opened="OnArrangeOpened" Closed="OnArrangeClosed" PreviewKeyDown="OnArrangeKeyDown">
+                            <Border Style="{StaticResource FloatingPanel}" Width="{DynamicResource ArrangeMenuWidth}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource SectionHeading}" Text="Arrange on the plate" />
+                                    <UniformGrid Columns="4" Margin="0,0,0,12">
+                                        <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeShape" Content="Fit plate" IsChecked="{Binding ShapeFit}" />
+                                        <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeShape" Content="One row" IsChecked="{Binding ShapeRow}" />
+                                        <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeShape" Content="One column" IsChecked="{Binding ShapeColumn}" />
+                                        <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeShape" Content="Square" IsChecked="{Binding ShapeSquare}" />
+                                    </UniformGrid>
+                                    <TextBlock Style="{StaticResource SectionHeading}" Text="Fine tune" />
+                                    <ItemsControl ItemsSource="{Binding ArrangeFields}" ItemsPanel="{StaticResource TwoColumns}" Margin="0,0,-8,4" />
+                                    <TextBlock Style="{StaticResource SectionHeading}" Text="Order" />
+                                    <UniformGrid Columns="3">
+                                        <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeOrder" Content="As listed" IsChecked="{Binding OrderListed}" />
+                                        <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeOrder" Content="א-ב" IsChecked="{Binding OrderAlphabetical}" />
+                                        <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeOrder" Content="By size" IsChecked="{Binding OrderBySize}" />
+                                    </UniformGrid>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                        <Button Content="Reset view" Command="{Binding ResetViewCommand}" Margin="0,0,12,0" VerticalAlignment="Center" />
+                        <views:ColourPicker Label="Base" Title="Base colour" Hex="{Binding BaseColour}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <views:ColourPicker Label="Letters" Title="Letters colour" Hex="{Binding LetterColour}" Margin="0,0,6,0" VerticalAlignment="Center" />
+                        <Button Content="⇄" Command="{Binding SwapColoursCommand}" ToolTip="Swap the two colours" AutomationProperties.Name="Swap the two colours" VerticalAlignment="Center" />
+                    </WrapPanel>
+                </Border>
+
+                <TextBlock Grid.Row="0" Text="Drag to rotate  ·  Wheel to zoom  ·  Right-drag to pan" FontSize="{DynamicResource LabelFontSize}"
+                           Foreground="{StaticResource ViewportTextBrush}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12" IsHitTestVisible="False" />
+
+                <TextBlock Grid.Row="0" Text="Add a name to see the preview" Foreground="{StaticResource ViewportTextBrush}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasNames}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+                <DockPanel Grid.Row="1" Margin="16,12">
+                    <Button DockPanel.Dock="Right" Content="Send to Bambu Studio" Command="{Binding SendToBambuCommand}" Margin="8,0,0,0"
+                            Style="{DynamicResource AccentButtonStyle}" />
+                    <Button DockPanel.Dock="Right" Content="Save…" Command="{Binding SaveCommand}" Margin="8,0,0,0" />
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Status}" TextWrapping="Wrap" FontSize="{DynamicResource LabelFontSize}" />
+                        <TextBlock Text="{Binding Warning}" Foreground="{StaticResource WarningBrush}" FontSize="{DynamicResource LabelFontSize}" FontWeight="SemiBold" TextWrapping="Wrap"
+                                   Visibility="{Binding HasWarning, Converter={StaticResource BoolToVisible}}" />
+                    </StackPanel>
+                </DockPanel>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

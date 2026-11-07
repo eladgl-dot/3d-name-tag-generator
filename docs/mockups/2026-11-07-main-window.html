@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Main window mockup</title>
+<style>
+:root {
+  --bg: #f3f4f6; --panel: #ffffff; --field: #f3f4f6; --line: #dfe2e7; --text: #1b1f27; --muted: #5d6573;
+  --accent: #0f6cbd; --accent-text: #ffffff; --viewport: #e8ebf0; --grid: #d3d8e0;
+  --base: #1e90ff; --base-dark: #1570c9; --letters: #ffffff; --letters-dark: #c4cbd6;
+  --r: 8px; --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17191d; --panel: #212429; --field: #2b2f36; --line: #363b44; --text: #eceef2; --muted: #a2a9b6;
+    --accent: #4aa3ee; --accent-text: #08131f; --viewport: #15171b; --grid: #2a2e35;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 "Segoe UI", Tahoma, Arial, sans-serif; }
+html { color-scheme: light dark; }
+.app { display: flex; flex-direction: column; height: 100vh; min-height: 600px; }
+.top { display: flex; align-items: center; gap: var(--s2); padding: var(--s1) var(--s3); background: var(--panel); border-bottom: 1px solid var(--line); position: relative; z-index: 5; }
+.top img, .top svg { width: 22px; height: 22px; }
+.top strong { font-weight: 600; margin-inline-end: var(--s3); }
+.menu-btn { border: 0; background: none; color: var(--text); font: inherit; padding: 4px 10px; border-radius: 6px; cursor: pointer; }
+.menu-btn:hover, .menu-btn[aria-expanded="true"] { background: var(--field); }
+.menu { position: absolute; top: 100%; min-width: 230px; margin: 0; padding: var(--s1); list-style: none; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 6px 20px #0004; }
+.menu button { width: 100%; display: flex; justify-content: space-between; gap: var(--s4); border: 0; background: none; color: var(--text); font: inherit; text-align: start; padding: 6px 10px; border-radius: 6px; cursor: pointer; }
+.menu button:hover { background: var(--field); }
+.menu kbd { font: inherit; font-size: 12px; color: var(--muted); }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: var(--s1) 0; }
+dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 12px; width: min(560px, 90vw); padding: var(--s5); }
+dialog::backdrop { background: #0006; }
+dialog h3 { margin: 0 0 var(--s2); font-size: 18px; }
+dialog p, dialog li { margin: 0 0 var(--s2); }
+dialog ol, dialog ul { padding-inline-start: 20px; margin: 0 0 var(--s3); }
+.window { flex: 1; min-height: 0; display: grid; grid-template-columns: 340px 1fr; }
+aside { background: var(--panel); border-inline-end: 1px solid var(--line); overflow-y: auto; padding: var(--s4); display: flex; flex-direction: column; gap: var(--s4); }
+h2 { font-size: 12px; font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+.seg { display: flex; background: var(--field); border-radius: var(--r); padding: 3px; }
+.seg button { flex: 1; border: 0; background: none; color: var(--muted); padding: 6px; border-radius: 6px; font: inherit; cursor: pointer; }
+.seg button.on { background: var(--panel); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px #0003; }
+textarea, input, select { width: 100%; background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.words { list-style: none; margin: var(--s2) 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.words li { display: flex; justify-content: space-between; align-items: center; padding: 5px 8px; border-radius: 6px; cursor: pointer; }
+.words li:hover { background: var(--field); }
+.words li.on { background: color-mix(in srgb, var(--accent) 16%, transparent); font-weight: 600; }
+.words .x { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 15px; }
+.row { display: flex; justify-content: space-between; align-items: center; margin-top: var(--s1); }
+.link { border: 0; background: none; color: var(--accent); cursor: pointer; font: inherit; padding: 0; }
+.hint { font-size: 12px; color: var(--muted); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2) var(--s3); }
+label { display: block; font-size: 12px; color: var(--muted); }
+label input, label select { margin-top: 2px; font-size: 14px; }
+.full { grid-column: 1 / -1; }
+.switch { display: flex; justify-content: space-between; align-items: center; font-size: 14px; color: var(--text); }
+.switch i { width: 34px; height: 18px; border-radius: 9px; background: var(--accent); position: relative; }
+.switch i::after { content: ""; position: absolute; inset-block-start: 2px; inset-inline-end: 2px; width: 14px; height: 14px; background: var(--accent-text); border-radius: 50%; }
+main { display: flex; flex-direction: column; min-width: 0; }
+.view { flex: 1; position: relative; background: var(--viewport); overflow: hidden; cursor: grab; perspective: 1100px; user-select: none; touch-action: none;
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 40px 40px; }
+.view:active { cursor: grabbing; }
+.tools { position: absolute; inset-block-start: var(--s3); inset-inline-start: var(--s3); display: flex; gap: var(--s2); z-index: 2; }
+.chip { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.chip.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.tip { position: absolute; inset-block-end: var(--s3); inset-inline-start: var(--s3); font-size: 12px; color: var(--muted); z-index: 2; }
+.stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transform-style: preserve-3d; pointer-events: none; }
+.model { position: relative; transform-style: preserve-3d; width: 0; height: 0; }
+.layer { position: absolute; left: 50%; top: 50%; display: flex; align-items: center; gap: 10px; direction: rtl; white-space: nowrap;
+  font: 700 150px/1 "Gan CLM", "Arial", sans-serif; transform-origin: center; }
+.layer .txt { paint-order: stroke fill; }
+.ring { width: 60px; height: 60px; border-radius: 50%; border: 15px solid; flex: none; }
+footer { background: var(--panel); border-top: 1px solid var(--line); padding: var(--s3) var(--s4); display: flex; align-items: center; gap: var(--s3); flex-wrap: wrap; }
+.stats { flex: 1; min-width: 200px; font-size: 12px; color: var(--muted); }
+.stats b { color: var(--text); font-weight: 600; }
+.ok { color: #1a8f4c; font-weight: 600; }
+@media (prefers-color-scheme: dark) { .ok { color: #58cf8b; } }
+.btn { border-radius: var(--r); padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--text); }
+.btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+@media (max-width: 760px) { .window { grid-template-columns: 1fr; height: auto; } aside { border-inline-end: 0; } .view { min-height: 420px; } }
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <svg viewBox="0 0 256 256" aria-hidden="true">
+    <g fill="#1570C9" transform="translate(0 14)"><rect x="16" y="62" width="224" height="170" rx="46"/><path fill-rule="evenodd" d="M198 14a32 32 0 1 0 0 64a32 32 0 1 0 0-64Zm0 18a14 14 0 1 1 0 28a14 14 0 1 1 0-28Z"/></g>
+    <g fill="#1E90FF"><rect x="16" y="62" width="224" height="170" rx="46"/><path fill-rule="evenodd" d="M198 14a32 32 0 1 0 0 64a32 32 0 1 0 0-64Zm0 18a14 14 0 1 1 0 28a14 14 0 1 1 0-28Z"/></g>
+    <g fill="none" stroke="#fff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"><path d="M50 96H100L76 130C104 126 116 146 108 164C100 184 66 186 48 170"/><path d="M142 96V178H154C204 178 204 96 154 96Z"/></g>
+  </svg>
+  <strong>3D name tag generator</strong>
+  <div style="position:relative">
+    <button class="menu-btn" id="helpBtn" aria-haspopup="true" aria-expanded="false">Help</button>
+    <ul class="menu" id="helpMenu" hidden>
+      <li><button data-h="start">Quick start <kbd>F1</kbd></button></li>
+      <li><button data-h="settings">What each setting does</button></li>
+      <li><button data-h="fonts">Hebrew and fonts</button></li>
+      <li><button data-h="bambu">Printing with Bambu Studio</button></li>
+      <li><button data-h="keys">Mouse and keyboard</button></li>
+      <li><button data-h="trouble">Troubleshooting</button></li>
+      <li><hr></li>
+      <li><button data-h="about">About</button></li>
+    </ul>
+  </div>
+</header>
+<dialog id="helpDlg"><div id="helpBody"></div><button class="btn" id="helpClose">Close</button></dialog>
+<div class="window">
+  <aside>
+    <section>
+      <label>Item
+        <select id="types">
+          <option value="keychain">Keychain</option>
+          <option value="pencil">Pencil top</option>
+          <option value="bookmark">Bookmark</option>
+          <option disabled>New items you add appear here</option>
+        </select>
+      </label>
+    </section>
+
+    <section>
+      <h2>Names</h2>
+      <textarea id="box" rows="2" dir="auto" placeholder="Type a name or paste a list from Excel"></textarea>
+      <div class="row"><span class="hint">Ctrl+Enter to add</span><button class="link" id="clear">Clear list</button></div>
+      <ul class="words" id="words"></ul>
+    </section>
+
+    <section>
+      <h2>Text</h2>
+      <div class="grid">
+        <label class="full">Font
+          <select>
+            <optgroup label="Hebrew fonts on this PC">
+              <option>Gan CLM (Bold)</option><option>Aharoni</option><option>Arial</option><option>David</option><option>FrankRuehl</option><option>Gisha</option><option>Guttman Yad-Brush</option><option>Miriam</option><option>Narkisim</option><option>Suez One</option><option>Tahoma</option>
+            </optgroup>
+            <optgroup label="Other fonts"><option>Impact</option><option>Verdana</option></optgroup>
+          </select>
+        </label>
+        <div class="full row" style="margin-top:0"><span class="hint">Hebrew fonts are listed first</span><button class="link">Add font file…</button></div>
+        <label>Font size<input type="number" value="18"></label>
+        <label>Text weight<input type="number" value="0" step="0.1"></label>
+        <label>Base height (mm)<input type="number" value="3"></label>
+        <label>Letter height (mm)<input type="number" value="4" step="0.1"></label>
+        <label class="full">Outline around letters (mm)<input type="number" value="3"></label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Between two words</h2>
+      <div class="grid">
+        <label>Connector<select><option>Hyphen (-)</option><option>En dash (–)</option><option>Em dash (—)</option><option>Underscore (_)</option></select></label>
+        <label>Style<select><option>Solid</option><option>Hollow</option></select></label>
+      </div>
+    </section>
+
+    <section id="p-keychain">
+      <h2>Keyring</h2>
+      <div class="grid">
+        <div class="switch full">Add keyring loop<i></i></div>
+        <label>Hole size (mm)<input type="number" value="4"></label>
+        <label>Position<select><option>Right (start)</option><option>Left (end)</option></select></label>
+        <label class="full">Distance adjust (mm)<input type="number" value="-2" step="0.5"></label>
+      </div>
+    </section>
+    <section id="p-pencil" hidden>
+      <h2>Pencil</h2>
+      <div class="grid">
+        <label>Hole size (mm)<input type="number" value="7.8" step="0.1"></label>
+        <label>Hole outline (mm)<input type="number" value="10" step="0.1"></label>
+      </div>
+    </section>
+    <section id="p-bookmark" hidden>
+      <h2>Bookmark clip</h2>
+      <div class="grid">
+        <label>Clip width (mm)<input type="number" value="35"></label>
+        <label>Clip length (mm)<input type="number" value="90"></label>
+        <label>Border (mm)<input type="number" value="3"></label>
+        <label>U-cut gap (mm)<input type="number" value="1" step="0.1"></label>
+      </div>
+    </section>
+  </aside>
+
+  <main>
+    <div class="view" id="view">
+      <div class="tools">
+        <button class="chip on" id="one">This name</button>
+        <button class="chip" id="all">All names</button>
+        <button class="chip" id="reset">Reset view</button>
+      </div>
+      <div class="tip">Drag to rotate · Wheel to zoom · Right-drag to pan</div>
+      <div class="stage"><div class="model" id="model"></div></div>
+    </div>
+    <footer>
+      <div class="stats"><b>62 × 26 × 7 mm</b> · 2 names · <span class="ok">Ready to print</span></div>
+      <button class="btn">Save STL…</button>
+      <button class="btn primary">Send to Bambu Studio</button>
+    </footer>
+  </main>
+</div>
+</div>
+
+<script>
+const css = getComputedStyle(document.documentElement);
+const v = n => css.getPropertyValue(n).trim();
+let words = ["ליב", "נויה"], sel = 0, rx = -30, ry = -8, zoom = 1, type = "keychain", showAll = false;
+const model = document.getElementById("model");
+
+function layer(text, z, opts, yOff) {
+  const d = document.createElement("div");
+  d.className = "layer";
+  // The ring is always in the row so base and letters line up; only its visibility changes.
+  const showRing = type === "keychain" && opts.ring;
+  const ringHtml = type === "keychain"
+    ? `<span class="ring" style="border-color:${opts.color};visibility:${showRing ? "visible" : "hidden"}"></span>`
+    : "";
+  d.innerHTML = ringHtml + `<span class="txt"></span>`;
+  const t = d.querySelector(".txt");
+  t.textContent = text;
+  t.style.color = opts.color;
+  if (opts.stroke) { t.style.webkitTextStroke = `${opts.stroke}px ${opts.color}`; }
+  d.style.transform = `translate(-50%, -50%) translateY(${yOff}px) translateZ(${z}px)`;
+  return d;
+}
+
+function drawTag(text, yOff) {
+  for (let z = 0; z < 16; z += 2) {
+    model.append(layer(text, z, { color: z < 14 ? v("--base-dark") : v("--base"), stroke: 18, ring: true }, yOff));
+  }
+  for (let z = 16; z < 36; z += 2) {
+    const top = z >= 34;
+    model.append(layer(text, z, { color: top ? v("--letters") : v("--letters-dark"), stroke: 0, ring: false }, yOff));
+  }
+}
+
+function render() {
+  model.innerHTML = "";
+  if (words.length) {
+    if (showAll) {
+      words.forEach((w, i) => drawTag(w, (i - (words.length - 1) / 2) * 210));
+    } else {
+      drawTag(words[Math.min(sel, words.length - 1)], 0);
+    }
+  }
+  model.style.transform = `scale(${zoom}) rotateX(${-rx}deg) rotateZ(${ry}deg)`;
+  const list = document.getElementById("words");
+  list.innerHTML = "";
+  words.forEach((w, i) => {
+    const li = document.createElement("li");
+    if (i === sel) li.className = "on";
+    li.innerHTML = `<span dir="auto"></span><button class="x" title="Remove">×</button>`;
+    li.firstChild.textContent = w;
+    li.onclick = () => { sel = i; render(); };
+    li.lastChild.onclick = e => { e.stopPropagation(); words.splice(i, 1); sel = 0; render(); };
+    list.append(li);
+  });
+  document.querySelector(".stats").innerHTML = words.length
+    ? `<b>62 × 26 × 7 mm</b> · ${words.length} names · <span class="ok">Ready to print</span>`
+    : `Add a name to see the preview`;
+  document.querySelectorAll("footer .btn").forEach(b => b.disabled = !words.length);
+}
+
+const box = document.getElementById("box");
+box.addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.ctrlKey) {
+    words.push(...box.value.split(/\r?\n/).map(s => s.trim()).filter(Boolean));
+    box.value = ""; render();
+  }
+});
+document.getElementById("clear").onclick = () => { words = []; render(); };
+document.getElementById("one").onclick = e => { showAll = false; e.target.classList.add("on"); document.getElementById("all").classList.remove("on"); render(); };
+document.getElementById("all").onclick = e => { showAll = true; e.target.classList.add("on"); document.getElementById("one").classList.remove("on"); render(); };
+document.getElementById("reset").onclick = () => { rx = -30; ry = -8; zoom = 1; render(); };
+document.getElementById("types").onchange = e => {
+  type = e.target.value;
+  ["keychain", "pencil", "bookmark"].forEach(t => document.getElementById("p-" + t).hidden = t !== type);
+  render();
+};
+const HELP = {
+  start: `<h3>Quick start</h3><ol><li>Choose an item.</li><li>Type names, or paste a column from Excel.</li><li>Change settings and rotate the 3D preview.</li><li>Click <b>Save STL</b> or <b>Send to Bambu Studio</b>.</li></ol>`,
+  settings: `<h3>What each setting does</h3><ul><li><b>Base height:</b> thickness of the blue layer.</li><li><b>Letter height:</b> how far the letters rise above the base.</li><li><b>Outline:</b> how far the base extends around the letters.</li><li><b>Text weight:</b> makes the letters thicker.</li></ul>`,
+  fonts: `<h3>Hebrew and fonts</h3><p>Fonts with Hebrew letters are listed first. Use <b>Add font file</b> for a font that is not installed.</p><p>Names are always shown in the correct right-to-left order.</p>`,
+  bambu: `<h3>Printing with Bambu Studio</h3><p><b>Send to Bambu Studio</b> opens your tags there, ready to slice. Choose your filaments and print.</p>`,
+  keys: `<h3>Mouse and keyboard</h3><ul><li>Drag: rotate</li><li>Wheel: zoom</li><li>Right-drag: pan</li><li>Ctrl+Enter: add names</li><li>F1: help</li></ul>`,
+  trouble: `<h3>Troubleshooting</h3><ul><li><b>Squares instead of letters:</b> the font has no Hebrew. Pick one from the Hebrew list.</li><li><b>Bambu button does nothing:</b> check that Bambu Studio is installed.</li></ul>`,
+  about: `<h3>3D name tag generator</h3><p>Makes 3D-printable Hebrew name tags. Works offline.</p>`
+};
+const helpBtn = document.getElementById("helpBtn"), helpMenu = document.getElementById("helpMenu"), helpDlg = document.getElementById("helpDlg");
+function setMenu(open) { helpMenu.hidden = !open; helpBtn.setAttribute("aria-expanded", open); }
+function showHelp(k) { document.getElementById("helpBody").innerHTML = HELP[k]; setMenu(false); helpDlg.showModal(); }
+helpBtn.onclick = e => { e.stopPropagation(); setMenu(helpMenu.hidden); };
+document.addEventListener("click", () => setMenu(false));
+helpMenu.querySelectorAll("button").forEach(b => b.onclick = () => showHelp(b.dataset.h));
+document.getElementById("helpClose").onclick = () => helpDlg.close();
+document.addEventListener("keydown", e => { if (e.key === "F1") { e.preventDefault(); showHelp("start"); } });
+const view = document.getElementById("view");
+let drag = null;
+view.addEventListener("pointerdown", e => { if (e.target.closest(".chip")) return; drag = [e.clientX, e.clientY]; view.setPointerCapture(e.pointerId); });
+view.addEventListener("pointermove", e => {
+  if (!drag) return;
+  ry += (e.clientX - drag[0]) * 0.4; rx += (e.clientY - drag[1]) * 0.4; drag = [e.clientX, e.clientY];
+  model.style.transform = `scale(${zoom}) rotateX(${-rx}deg) rotateZ(${ry}deg)`;
+});
+view.addEventListener("pointerup", () => drag = null);
+view.addEventListener("wheel", e => { e.preventDefault(); zoom = Math.min(3, Math.max(0.4, zoom - e.deltaY * 0.001)); model.style.transform = `scale(${zoom}) rotateX(${-rx}deg) rotateZ(${ry}deg)`; }, { passive: false });
+render();
+</script>
+</body>
+</html>
