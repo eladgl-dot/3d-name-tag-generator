@@ -1,7 +1,7 @@
 # Next
 
 Branch: `master` (git initialised, nothing committed; the whole project is untracked). Commit only when the owner asks.
-Active plan: [plans/csharp-app.md](plans/csharp-app.md). Done: crash log, colours, gap filling, desk plate, wine glass marker, Arrange menu, cup marker saddle. Next: Build 0.2.
+Active plan: [plans/csharp-app.md](plans/csharp-app.md). Done: crash log, colours, gap filling, desk plate, wine glass marker, Arrange menu, cup marker saddle. Next: website ([plans/website.md](plans/website.md)), waiting for mockup approval. Build 0.2 after.
 
 Waiting for the owner:
 - Trying the Arrange menu by hand, especially the first click after switching to the app.

@@ -9,7 +9,9 @@ public sealed record FontOption(string Name, string Group);
 /// <summary>Fonts inside the app, fonts installed on the PC and font files the user adds.</summary>
 public static class FontCatalog
 {
-    public const string BuiltInGroup = "Hebrew fonts, built into this app";
+    public const string BuiltInBothGroup = "Built in: Hebrew and English";
+    public const string BuiltInHebrewGroup = "Built in: Hebrew";
+    public const string BuiltInEnglishGroup = "Built in: English";
     public const string AddedGroup = "Fonts you added";
     public const string HebrewGroup = "Hebrew fonts on this PC";
     public const string OtherGroup = "Other fonts on this PC";
@@ -17,6 +19,7 @@ public static class FontCatalog
     static readonly object Gate = new();
     static readonly Dictionary<string, FontFamily> Private = new(StringComparer.OrdinalIgnoreCase);
     static readonly List<string> Added = new();
+    static readonly Dictionary<string, string> BuiltInGroups = new(StringComparer.OrdinalIgnoreCase);
     static bool _loaded;
 
     public static string AppDataFolder { get; } =
@@ -50,7 +53,10 @@ public static class FontCatalog
         HashSet<string> taken;
         lock (Gate)
         {
-            options.AddRange(Private.Keys.Where(k => !Added.Contains(k)).OrderBy(k => k).Select(k => new FontOption(k, BuiltInGroup)));
+            var groupOrder = new[] { BuiltInBothGroup, BuiltInHebrewGroup, BuiltInEnglishGroup };
+            options.AddRange(Private.Keys.Where(k => !Added.Contains(k))
+                .Select(k => new FontOption(k, BuiltInGroups[k]))
+                .OrderBy(f => Array.IndexOf(groupOrder, f.Group)).ThenBy(f => f.Name));
             options.AddRange(Added.OrderBy(k => k).Select(k => new FontOption(k, AddedGroup)));
             taken = new HashSet<string>(Private.Keys, StringComparer.OrdinalIgnoreCase);
         }
@@ -75,6 +81,13 @@ public static class FontCatalog
         var copy = Path.Combine(AddedFolder, Path.GetFileName(path));
         File.Copy(path, copy, overwrite: true);
         lock (Gate) return Register(copy, added: true);
+    }
+
+    static string GroupFor(GlyphTypeface glyphs)
+    {
+        var hebrew = glyphs.CharacterToGlyphMap.ContainsKey(0x05D0);
+        var english = glyphs.CharacterToGlyphMap.ContainsKey('a');
+        return hebrew && english ? BuiltInBothGroup : hebrew ? BuiltInHebrewGroup : BuiltInEnglishGroup;
     }
 
     static bool HasHebrew(FontFamily family)
@@ -130,9 +143,11 @@ public static class FontCatalog
     static string? Register(string file, bool added)
     {
         string? name;
+        GlyphTypeface glyphs;
         try
         {
-            name = new GlyphTypeface(new Uri(file)).FamilyNames.Values.FirstOrDefault();
+            glyphs = new GlyphTypeface(new Uri(file));
+            name = glyphs.FamilyNames.Values.FirstOrDefault();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NullReferenceException)
         {
@@ -143,6 +158,7 @@ public static class FontCatalog
         var folder = new Uri(Path.GetDirectoryName(file) + Path.DirectorySeparatorChar);
         Private[name] = new FontFamily(folder, $"./{Path.GetFileName(file)}#{name}");
         if (added && !Added.Contains(name)) Added.Add(name);
+        if (!added) BuiltInGroups[name] = GroupFor(glyphs);
         return name;
     }
 }

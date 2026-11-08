@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Website mockup</title>
+<style>
+:root {
+  --bg: #f3f4f6; --panel: #ffffff; --field: #f3f4f6; --line: #dfe2e7; --text: #1b1f27; --muted: #5d6573;
+  --accent: #0f6cbd; --accent-text: #ffffff; --viewport: #e8ebf0; --grid: #d3d8e0;
+  --base: #1e90ff; --base-dark: #1570c9; --letters: #ffffff;
+  --r: 8px; --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17191d; --panel: #212429; --field: #2b2f36; --line: #363b44; --text: #eceef2; --muted: #a2a9b6;
+    --accent: #4aa3ee; --accent-text: #08131f; --viewport: #15171b; --grid: #2a2e35;
+  }
+}
+* { box-sizing: border-box; }
+html { color-scheme: light dark; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 "Segoe UI", Tahoma, Arial, sans-serif; }
+.note { max-width: 1200px; margin: var(--s3) auto 0; padding: 0 var(--s4); color: var(--muted); font-size: 12px; }
+.page { max-width: 1200px; margin: var(--s3) auto var(--s5); padding: 0 var(--s4); }
+.frame { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+header { display: flex; align-items: center; gap: var(--s2); padding: var(--s2) var(--s4); border-bottom: 1px solid var(--line); }
+header svg { width: 24px; height: 24px; flex: none; }
+header strong { font-size: 16px; }
+header .ver { color: var(--muted); font-size: 12px; }
+header .grow { flex: 1; }
+.link { border: 0; background: none; color: var(--accent); font: inherit; cursor: pointer; padding: 4px 6px; }
+.layout { display: grid; grid-template-columns: 330px 1fr; min-height: 560px; }
+aside { padding: var(--s4); border-inline-end: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s4); }
+h2 { font-size: 12px; font-weight: 600; color: var(--muted); margin: 0 0 var(--s2); }
+textarea, select, input { width: 100%; background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: inherit; }
+textarea { min-height: 96px; resize: vertical; }
+.hint { font-size: 12px; color: var(--muted); margin-top: var(--s1); }
+.chips { display: flex; flex-wrap: wrap; gap: var(--s1); }
+.chip { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; }
+.chip.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-weight: 600; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2) var(--s3); }
+label { display: block; font-size: 12px; color: var(--muted); }
+label input, label select { margin-top: 2px; font-size: 14px; }
+.colours { display: flex; gap: var(--s3); }
+.sw { display: flex; align-items: center; gap: var(--s2); font-size: 13px; }
+.sw i { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line); }
+main { display: flex; flex-direction: column; min-width: 0; }
+.view { flex: 1; position: relative; min-height: 360px; background: var(--viewport);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 40px 40px; }
+.tools { position: absolute; inset-block-start: var(--s3); inset-inline: var(--s3); display: flex; gap: var(--s2); align-items: center; }
+.seg { display: flex; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 2px; }
+.seg button { border: 0; background: none; color: var(--muted); padding: 4px 10px; border-radius: 6px; font: inherit; font-size: 12px; cursor: pointer; }
+.seg button.on { background: var(--field); color: var(--text); font-weight: 600; }
+.tools .grow { flex: 1; }
+.stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 56px var(--s4) 40px; }
+.stage svg { width: min(520px, 100%); height: auto; }
+.tip { position: absolute; inset-block-end: var(--s2); inset-inline-start: var(--s3); font-size: 12px; color: var(--muted); }
+.bar { display: flex; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); border-top: 1px solid var(--line); flex-wrap: wrap; }
+.primary { background: var(--accent); color: var(--accent-text); border: 0; border-radius: var(--r); padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer; }
+.secondary { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 14px; font: inherit; cursor: pointer; }
+.bar .hint { margin: 0; flex: 1; min-width: 200px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.name { font: 700 30px "Segoe UI", Tahoma, Arial, sans-serif; fill: var(--letters); text-anchor: middle; direction: rtl; }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  aside { border-inline-end: 0; border-bottom: 1px solid var(--line); }
+  main { order: -1; }
+  .view { min-height: 280px; }
+}
+</style>
+</head>
+<body>
+<p class="note">Mockup of the website, not working. On a phone the preview moves to the top and the settings go underneath.</p>
+<div class="page">
+  <div class="frame">
+    <header>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="4" fill="var(--base)"/><circle cx="6.5" cy="12" r="1.6" fill="var(--panel)"/><rect x="10" y="10" width="9" height="4" rx="1" fill="#fff"/></svg>
+      <strong>3D name tag generator</strong>
+      <span class="ver">v0.2</span>
+      <span class="grow"></span>
+      <button class="link">How to print</button>
+      <button class="link">GitHub</button>
+    </header>
+    <div class="layout">
+      <aside>
+        <section>
+          <h2>Names (one per line)</h2>
+          <textarea dir="auto" aria-label="Names">נויה
+דניאל
+Noa</textarea>
+          <p class="hint">3 names. Hebrew and English both work.</p>
+        </section>
+        <section>
+          <h2>Item</h2>
+          <div class="chips">
+            <button class="chip on">Keychain</button><button class="chip">Pencil top</button><button class="chip">Bookmark</button>
+            <button class="chip">Desk plate</button><button class="chip">Cup marker</button><button class="chip">Wine glass</button>
+          </div>
+        </section>
+        <section>
+          <h2>Letters</h2>
+          <div class="grid">
+            <label class="full" style="grid-column:1/-1">Font<select>
+              <optgroup label="Hebrew and English"><option>Rubik</option><option>Heebo</option><option>Assistant</option><option>Varela Round</option><option>Secular One</option><option>Fredoka</option><option>Frank Ruhl Libre</option><option>Alef</option></optgroup>
+              <optgroup label="Hebrew, decorative"><option selected>Gan CLM</option><option>MigdalHaemeq</option><option>Noot</option><option>Suez One</option></optgroup>
+              <optgroup label="English only"><option>Pacifico (joined letters)</option><option>Lobster (joined letters)</option><option>Righteous</option><option>Chewy</option><option>Comfortaa</option><option>Bebas Neue (capitals)</option></optgroup>
+              <optgroup label="Your own"><option>Upload a font file…</option></optgroup>
+            </select></label>
+            <label>Letter size (mm)<input value="12"></label>
+            <label>Letter height (mm)<input value="1"></label>
+            <label>Base height (mm)<input value="3"></label>
+            <label>Outline (mm)<input value="2"></label>
+          </div>
+          <p class="hint">Each item shows its own settings here, as in the app.</p>
+        </section>
+        <section>
+          <h2>Colours</h2>
+          <div class="colours">
+            <span class="sw"><i style="background:var(--base)"></i>Base</span>
+            <span class="sw"><i style="background:#fff"></i>Letters</span>
+          </div>
+        </section>
+      </aside>
+      <main>
+        <div class="view">
+          <div class="tools">
+            <div class="seg"><button class="on">This name</button><button>All names</button></div>
+            <span class="grow"></span>
+            <button class="secondary" style="padding:4px 10px;font-size:12px">Arrange ▾</button>
+          </div>
+          <div class="stage">
+            <svg viewBox="0 0 300 130" role="img" aria-label="Preview of a blue keychain with the name נויה">
+              <rect x="22" y="22" width="262" height="90" rx="40" fill="var(--base-dark)"/>
+              <rect x="16" y="14" width="262" height="90" rx="40" fill="var(--base)"/>
+              <circle cx="56" cy="59" r="12" fill="var(--viewport)"/>
+              <text class="name" x="172" y="71">נויה</text>
+            </svg>
+          </div>
+          <span class="tip">Drag to turn, scroll to zoom</span>
+        </div>
+        <div class="bar">
+          <button class="primary">Download 3MF</button>
+          <button class="secondary">Download STL</button>
+          <p class="hint">Double-click the 3MF to open it in Bambu Studio. Base and letters come in as two parts, ready for two colours.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+</body>
+</html>

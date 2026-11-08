@@ -12,7 +12,7 @@ Background: [app-overview.md](../app-overview.md). Mockup: [main window](../mock
 | Output | `dist/3D name tag generator.exe`, about 700 KB, one file |
 
 ## Questions (waiting for answers)
-None right now.
+Website questions are in [website.md](website.md).
 
 ## Owner answers
 Answered 2026-11-07.
@@ -59,6 +59,7 @@ Fourth round, 2026-11-07:
 - Cup marker redesign: A, saddle along the rim. Pictures: [cup marker options](../mockups/2026-11-07-cup-marker.html).
 - After the first cup marker print: fit is too loose (1C). Fix by entering a smaller Rim thickness and printing again. Commit and push to GitHub with the EXE (2A). Stop for now (3C).
 - Owner (2026-11-08): let the inner and outer wall heights be set separately. Done in v0.1.3.
+- Sharing (2026-11-08): turn it into a website instead of EXE + PDF. 1A web version from the same C# code (Blazor WebAssembly), keep the EXE. 2A make this repo public after font licences and README. 3A same 4 fonts. Plan: [website.md](website.md). PDF on hold.
 
 ## Decisions
 From the owner:

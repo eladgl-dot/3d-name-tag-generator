@@ -38,7 +38,7 @@ public partial class HelpWindow : Window
             "The first name goes top right, following Hebrew reading order. Click outside the menu or press Esc to close it."),
         new("fonts", "Hebrew and fonts",
             "Names always read in the correct right-to-left order.\n\n" +
-            "The font list comes from your PC, with Hebrew fonts first. Four Hebrew fonts are built into this app and work on every PC: Gan CLM, MigdalHaemeq, Noot and Suez One.\n\n" +
+            "17 fonts are built into this app and work on every PC. They come first in the list, grouped by the letters they have: Hebrew and English, Hebrew only, or English only. Pacifico and Lobster join their letters, so an English name prints as one piece. Below them come fonts you added and the fonts on your PC, Hebrew fonts first.\n\n" +
             "Add font file loads any .ttf or .otf file and remembers it.\n\n" +
             "If you see the wrong letter shapes, that font probably has no Hebrew. Choose one from the Hebrew groups."),
         new("bambu", "Printing in two colours",
@@ -55,12 +55,12 @@ public partial class HelpWindow : Window
             "On another PC, Windows may ask to install the .NET Desktop Runtime the first time. Accept, install it and start the app again.\n\n" +
             "Memory message: the preview switches to a slower mode that does not use the graphics card, and restarting the app returns it to normal. Closing other 3D programs helps. Details are saved in crash.log, in the folder %LOCALAPPDATA%\\3D name tag generator."),
         new("about", "About",
-            "3D name tag generator, version 0.1 (prototype). Works offline.\n\n" +
+            AppInfo.WindowTitle + ". Works offline.\n\n" +
             "Built-in fonts:\n" +
             "Gan CLM, © 2004 Maxim Iorsh, GNU GPL v2.\n" +
-            "MigdalHaemeq, © 2010 Elad Mizrahi, SIL Open Font License 1.1.\n" +
-            "Noot, © 2012 Amos Jerbi, SIL Open Font License 1.1.\n" +
-            "Suez One, © 2016 Michal Sahar, SIL Open Font License 1.1.\n\n" +
+            "Chewy, © 2010 Font Diner, Apache License 2.0.\n" +
+            "Alef, Assistant, Bebas Neue, Comfortaa, Fredoka, Heebo, Lobster, MigdalHaemeq, Noot, Pacifico, Righteous, Rubik, Secular One, Suez One and Varela Round: SIL Open Font License 1.1, © their authors.\n" +
+            "Full licence texts: https://github.com/eladgl-dot/3d-name-tag-generator/tree/main/assets/fonts/licences\n\n" +
             "Libraries: Clipper2 by Angus Johnson (Boost Software License), LibTessDotNet (SGI Free Software License B)."),
     };
 

@@ -111,20 +111,59 @@ public class TextTests
         Assert.Contains(FontCatalog.AppDataFolder.Replace('\\', '/'), Uri.UnescapeDataString(glyphs.FontUri.AbsoluteUri), StringComparison.OrdinalIgnoreCase);
     }
 
+    static string SampleFor(string font) =>
+        FontCatalog.ListAll().Single(f => f.Name == font).Group == FontCatalog.BuiltInEnglishGroup ? "Hello" : "שלום";
+
     [Fact]
     public void BuiltInFonts_AllDrawDifferently()
     {
+        // Each font in its own script, so a font never falls back to a Windows font here.
         var widths = FontCatalog.BuiltIn
-            .Select(n => Poly.Bounds(TextOutliner.Build("שלום", FontCatalog.Resolve(n), false, 18, "-", false).Letters).Width)
+            .Select(n => Poly.Bounds(TextOutliner.Build(SampleFor(n), FontCatalog.Resolve(n), false, 18, "-", false).Letters).Width)
             .ToList();
 
-        Assert.Equal(4, widths.Distinct().Count());
+        Assert.Equal(FontCatalog.BuiltIn.Count, widths.Distinct().Count());
     }
 
     [Fact]
-    public void BuiltInFontList_ContainsAllFourFonts()
+    public void BuiltInFontList_ContainsAllBundledFonts()
     {
-        Assert.Equal(new[] { "Gan CLM", "MigdalHaemeq", "Noot", "Suez One" }, FontCatalog.BuiltIn.OrderBy(n => n));
+        Assert.Equal(new[]
+        {
+            "Alef", "Assistant", "Bebas Neue", "Chewy", "Comfortaa", "Fredoka", "Gan CLM", "Heebo", "Lobster",
+            "MigdalHaemeq", "Noot", "Pacifico", "Righteous", "Rubik", "Secular One", "Suez One", "Varela Round",
+        }, FontCatalog.BuiltIn.OrderBy(n => n));
+    }
+
+    [Theory]
+    [InlineData("Rubik", FontCatalog.BuiltInBothGroup)]
+    [InlineData("Alef", FontCatalog.BuiltInBothGroup)]
+    [InlineData("Gan CLM", FontCatalog.BuiltInHebrewGroup)]
+    [InlineData("Pacifico", FontCatalog.BuiltInEnglishGroup)]
+    [InlineData("Bebas Neue", FontCatalog.BuiltInEnglishGroup)]
+    public void BuiltInFonts_AreGroupedByTheLettersTheyHave(string font, string group)
+    {
+        Assert.Equal(group, FontCatalog.ListAll().Single(f => f.Name == font).Group);
+    }
+
+    [Fact]
+    public void BuiltInFonts_ComeFirst_GroupedTogether()
+    {
+        var groups = FontCatalog.ListAll().Select(f => f.Group).Distinct().ToList();
+        Assert.Equal(new[] { FontCatalog.BuiltInBothGroup, FontCatalog.BuiltInHebrewGroup, FontCatalog.BuiltInEnglishGroup }, groups.Take(3));
+    }
+
+    [Fact]
+    public void BuiltInFonts_HaveNoPartsTooThinToPrint()
+    {
+        // Parts under 0.8 mm (two nozzle widths) vanish when shrunk and regrown by 0.4 mm.
+        foreach (var font in FontCatalog.BuiltIn)
+        {
+            var letters = TextOutliner.Build(SampleFor(font) + " נויה Noa", FontCatalog.Resolve(font), false, 12, "", false).Letters;
+            var opened = Poly.Inflate(Poly.Inflate(letters, -0.4), 0.4);
+            var lost = 1 - Clipper.Area(opened) / Clipper.Area(letters);
+            Assert.True(lost < 0.03, $"{font}: {lost:P1} of the letters is thinner than 0.8 mm");
+        }
     }
 }
 

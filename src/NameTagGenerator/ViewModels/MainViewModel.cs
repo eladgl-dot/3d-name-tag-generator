@@ -392,7 +392,7 @@ public sealed class MainViewModel : Observable
 
     void LoadFontsInBackground(string? selectAfter = null)
     {
-        if (_fonts.Count == 0) _fonts.Add(new FontOption(Settings.Font, FontCatalog.BuiltInGroup));
+        if (_fonts.Count == 0) _fonts.Add(new FontOption(Settings.Font, FontCatalog.BuiltInBothGroup));
         Task.Run(FontCatalog.ListAll).ContinueWith(t =>
         {
             if (t.IsFaulted) return;

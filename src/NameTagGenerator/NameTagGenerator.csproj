@@ -10,7 +10,7 @@
     <AssemblyName>NameTagGenerator</AssemblyName>
     <Product>3D name tag generator</Product>
     <AssemblyTitle>3D name tag generator</AssemblyTitle>
-    <Version>0.1.3</Version>
+    <Version>0.1.4</Version>
     <ApplicationIcon>..\..\assets\logo.ico</ApplicationIcon>
     <!-- Keep working when a newer .NET is installed instead of .NET 10. -->
     <RollForward>Major</RollForward>
