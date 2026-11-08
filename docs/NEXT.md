@@ -1,7 +1,7 @@
 # Next
 
 Branch: `master` (git initialised, nothing committed; the whole project is untracked). Commit only when the owner asks.
-Active plan: [plans/csharp-app.md](plans/csharp-app.md). Done: crash log, colours, gap filling, desk plate, wine glass marker, Arrange menu, cup marker saddle. Next: website ([plans/website.md](plans/website.md)), waiting for mockup approval. Build 0.2 after.
+Active plan: [plans/csharp-app.md](plans/csharp-app.md). Done: crash log, colours, gap filling, desk plate, wine glass marker, Arrange menu, cup marker saddle. Next: website ([plans/website.md](plans/website.md)), Phase 2 (shared code, browser font reader). Build 0.2 after.
 
 Waiting for the owner:
 - Trying the Arrange menu by hand, especially the first click after switching to the app.
@@ -27,7 +27,7 @@ Rules to remember:
 - Bundle only fonts with redistributable licences.
 - Hebrew in PowerShell 5 scripts: use `[char]` codes.
 
-GitHub: private repo https://github.com/eladgl-dot/3d-name-tag-generator, EXE under Releases. The old app copy (source_zip/ and its ZIP) stays local only. Add the full font licence texts before making anything public.
+GitHub: PUBLIC repo (since 2026-11-08, MIT) https://github.com/eladgl-dot/3d-name-tag-generator, EXE under Releases. Anything committed is public: never commit private files. The old app copy (source_zip/ and its ZIP) stays local only. Add the full font licence texts before making anything public.
 
 v0.1.2 shows its version in the window title; the number comes from Version in the csproj, so raise it there for each build. Built to dist/0.1.2 because a copy was running from dist. Not committed or released yet.
 

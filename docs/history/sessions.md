@@ -8,3 +8,4 @@
 - 2026-11-07: Owner printed the cup marker: looks great, fit too loose. First commit, pushed to a private GitHub repo with the EXE as a release.
 - 2026-11-07: Added the version to the window title, v0.1.2 (462 tests). Published to dist/0.1.2, not committed.
 - 2026-11-08: Cup marker inner and outer grip depth set separately, v0.1.3 (467 tests, Bambu check clean). Published to dist/0.1.3, not committed.
+- 2026-11-08: 17 built-in fonts (Frank Ruhl Libre dropped, too thin), font licences, README, MIT; repo made public. 1410 tests. Code at v0.1.4, no v0.1.4 EXE built yet.

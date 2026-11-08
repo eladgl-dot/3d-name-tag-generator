@@ -32,7 +32,7 @@ None right now.
 - [x] Add the full licence texts for the 4 fonts (GPL v2, SIL OFL 1.1). Verify: files present, listed in LICENSES.md.
 - [x] README: what it is, website link, EXE download, .NET 10 and "Run anyway" notes. Verify: reads well on GitHub.
 - [x] Read every file and the commit history for anything private before switching to public; show the owner the list. Verify: owner OK.
-- [ ] Switch the repo to public. Verify: page opens signed out.
+- [x] Switch the repo to public. Verify: page opens signed out.
 
 ### Phase 1b: More fonts
 - [x] Download the chosen fonts and their licences into assets/fonts; list each in LICENSES.md. Verify: every file has a licence entry.
