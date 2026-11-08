@@ -8,7 +8,7 @@
     <Version>0.2.0</Version>
     <!-- Sorting names alphabetically uses the he-IL culture, which the default browser data leaves out. -->
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
-    <!-- TagBuilder compares settings as JSON. -->
+    <!-- TagBuilder compares settings as JSON, and the page saves them as JSON. -->
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 

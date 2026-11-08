@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
 @inject IJSRuntime JS
+@inject UploadedFonts Fonts
 
 <PageTitle>3D name tag generator</PageTitle>
 
@@ -37,7 +39,7 @@
                     <div class="grid">
                         <label class="full">
                             Font
-                            <select @bind="Settings.Font" @bind:after="ScheduleRebuild">
+                            <select @ref="_fontList" value="@Settings.Font" @onchange="FontChosen">
                                 @foreach (var group in FontGroups)
                                 {
                                     <optgroup label="@group.Label">
@@ -47,8 +49,16 @@
                                         }
                                     </optgroup>
                                 }
+                                <optgroup label="Your own">
+                                    @foreach (var font in Fonts.Library.AddedNames)
+                                    {
+                                        <option value="@font">@font</option>
+                                    }
+                                    <option value="@UploadChoice">Upload a font file…</option>
+                                </optgroup>
                             </select>
                         </label>
+                        <InputFile @ref="_fontPicker" hidden accept=".ttf,.otf" OnChange="FontFileChosen" />
                         <div class="full"><Toggle Label="Bold" @bind-Value="Settings.Bold" @bind-Value:after="ScheduleRebuild" /></div>
                         @foreach (var field in ItemRegistry.CommonFields)
                         {
@@ -165,6 +175,9 @@
 
 @code {
     const double PetgGramsPerCm3 = 1.27;
+    const string SavedSettingsKey = "nametag.settings";
+    const string UploadChoice = "\u0001upload";
+    const long MaxFontBytes = 20 * 1024 * 1024;
 
     static readonly string Version = typeof(App).Assembly.GetName().Version?.ToString(2) ?? "";
 
@@ -176,8 +189,8 @@
 
     static readonly (string Label, List<string> Fonts)[] FontGroups = BuildFontGroups();
 
-    readonly SiteState _state = new();
-    readonly TagBuilder _builder = new();
+    SiteState _state = new();
+    TagBuilder _builder = null!;
     CancellationTokenSource? _rebuild;
     BuildResult? _result;
     List<string> _names = new();
@@ -186,6 +199,8 @@
 
     ElementReference _namesBox;
     ElementReference _canvasHost;
+    ElementReference _fontList;
+    InputFile _fontPicker = null!;
     IJSObjectReference? _preview;
     IJSObjectReference? _downloads;
     bool _noWebGl;
@@ -210,7 +225,37 @@
             .ToArray();
     }
 
-    protected override Task OnInitializedAsync() => ScheduleRebuild();
+    protected override Task OnInitializedAsync()
+    {
+        _builder = new TagBuilder(Fonts.Library.Get);
+        LoadSettings();
+        return ScheduleRebuild();
+    }
+
+    void LoadSettings()
+    {
+        try
+        {
+            var saved = ((IJSInProcessRuntime)JS).Invoke<string?>("localStorage.getItem", SavedSettingsKey);
+            _state = SiteState.FromJson(saved, Fonts.Library.Exists);
+        }
+        catch (JSException)
+        {
+            // A browser that blocks storage just starts from the defaults.
+        }
+    }
+
+    void SaveSettings()
+    {
+        try
+        {
+            ((IJSInProcessRuntime)JS).InvokeVoid("localStorage.setItem", SavedSettingsKey, _state.ToJson());
+        }
+        catch (JSException)
+        {
+            // Not being able to remember settings should never interrupt the user's work.
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -227,6 +272,55 @@
             StateHasChanged();
         }
         _downloads = module;
+    }
+
+    async Task FontChosen(ChangeEventArgs e)
+    {
+        var chosen = e.Value?.ToString() ?? "";
+        if (chosen == UploadChoice)
+        {
+            if (_downloads is not null) await _downloads.InvokeVoidAsync("pickFile", _fontList, Settings.Font, _fontPicker.Element);
+            return;
+        }
+        Settings.Font = chosen;
+        await ScheduleRebuild();
+    }
+
+    async Task FontFileChosen(InputFileChangeEventArgs e)
+    {
+        if (e.File.Size > MaxFontBytes)
+        {
+            _warning = "This font file is over 20 MB. Nothing was changed.";
+            return;
+        }
+
+        string? name = null;
+        byte[] file = Array.Empty<byte>();
+        try
+        {
+            using var read = e.File.OpenReadStream(MaxFontBytes);
+            using var copy = new MemoryStream();
+            await read.CopyToAsync(copy);
+            file = copy.ToArray();
+            name = Fonts.Library.Add(file);
+        }
+        catch (Exception ex) when (ex is IOException or JSException)
+        {
+            // Reported below, the same as a file that is not a font.
+        }
+        if (name is null)
+        {
+            _warning = "This file could not be read as a font. Nothing was changed.";
+            return;
+        }
+
+        var kept = await Fonts.SaveAsync(name, file);
+        Settings.Font = name;
+        // A newer file can have the same name as an older one, so finished models can't be reused.
+        _builder = new TagBuilder(Fonts.Library.Get);
+        _rebuild?.Cancel();
+        await Rebuild(CancellationToken.None);
+        if (!kept) _warning = "Font added, but this browser won't keep it after you leave the page.";
     }
 
     Task SelectItem(IItemType item)
@@ -249,7 +343,7 @@
         if (_preview is null || _previewAll) return;
         var line = await _preview.InvokeAsync<int>("caretLine", _namesBox);
         var lines = _state.NamesText.Split('\n');
-        var name = line < lines.Length ? lines[line].Trim() : "";
+        var name = line < lines.Length ? SiteState.CleanName(lines[line]) : "";
         if (name.Length == 0 || name == _selectedName) return;
         _selectedName = name;
         // A name still being typed is not built yet; the next build shows it.
@@ -262,6 +356,7 @@
 
     async Task ApplyColours()
     {
+        SaveSettings();
         if (_preview is not null) await _preview.InvokeVoidAsync("setColours", _state.BaseColour, _state.LetterColour);
     }
 
@@ -350,6 +445,8 @@
             _result = _builder.Build(_names, _state.Item, Settings, _state.Arrange, cancel);
             _status = Describe(_result);
             _warning = Problems(_result);
+            // Saved only after a good build, so settings that break it are gone after a reload.
+            SaveSettings();
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -374,7 +471,8 @@
     {
         var problems = new List<string>();
         if (!r.Array.FitsPlate) problems.Add(string.Create(CultureInfo.InvariantCulture, $"Does not fit the {_state.Arrange.PlateWidth:0} × {_state.Arrange.PlateHeight:0} mm plate"));
-        var loose = r.NamesWithLooseParts.Take(3).ToList();
+        // Isolated so a Hebrew name can't reorder the English words around it.
+        var loose = r.NamesWithLooseParts.Take(3).Select(name => $"⁨{name}⁩").ToList();
         if (loose.Count > 0) problems.Add("Loose parts in: " + string.Join(", ", loose));
         return string.Join(". ", problems);
     }

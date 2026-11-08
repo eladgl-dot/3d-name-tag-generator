@@ -13,3 +13,7 @@
 ## 2026-11-08 (website Phase 3 start)
 Done: Blazor site in src/NameTagGenerator.Web with the mockup layout, all 6 items, Arrange, three.js preview, Download 3MF and STL. Bambu headless clean for all 6; 1352 tests pass.
 In progress: Phase 3 remaining steps (remember settings, font upload, help). Nothing committed.
+
+## 2026-11-08 (website: settings and font upload)
+Done: first website commit; settings remembered in the browser; font upload kept in IndexedDB; direction marks removed from names. 1384 tests pass, headless Chrome checks pass on the Release build.
+In progress: help panel, waiting on plan question 1. Settings and font upload not committed yet.

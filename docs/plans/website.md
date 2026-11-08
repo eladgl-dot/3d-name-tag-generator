@@ -20,6 +20,7 @@ None right now.
 - 10A MIT licence for the app's own code.
 - 11A Include font upload on the website, as 7A says.
 - 12A Stay on SixLabors.Fonts 2.1.3: no licence key needed, but no new fixes from upstream.
+- 13A "How to print" opens a panel that slides in from the side, with the preview still visible.
 
 ## What the website does (first version)
 - Same items: keychain, pencil top, bookmark, desk plate, cup marker, wine glass marker.
@@ -53,8 +54,8 @@ Changes the owner will notice: a letter the chosen font does not have now comes 
 - [x] Blazor WebAssembly project, page laid out like the mockup, from the same design tokens. Verify: runs locally. Result: Release (trimmed) build served locally and driven in headless Chrome: all 6 items build, Alphabetical runs on an en-US browser with no error, no console errors, no sideways scroll at phone width, light and dark checked. About 3.5 MB compressed.
 - [x] 3D preview with three.js, name side up, same colours. Verify: screenshot check. Result: checked in headless Chrome with software 3D: Hebrew reads correctly, clicking a name line switches the preview, colours redraw, drag turns the view, All names shows the plate, Alphabetical runs from the top right. three.js 0.170 is copied into the site (no CDN). Not tried on a real graphics card or by touch.
 - [x] Download 3MF and STL from the browser. Verify: downloaded 3MF passes the Bambu headless check. Result: all 6 items downloaded from the browser; Bambu headless: 2 parts each, no mesh repairs. Downloads hold every name, placed as arranged.
-- [ ] Remember settings in the browser; Hebrew right-to-left everywhere. Verify: `rtl-check`, reload keeps settings.
-- [ ] Upload your own font file; a damaged file shows a message and changes nothing. Verify: uploaded font draws a name, is still there after reload.
+- [x] Remember settings in the browser; Hebrew right-to-left everywhere. Verify: `rtl-check`, reload keeps settings. Result: Release build in headless Chrome: names, item, font, size, Arrange and colours all survive a reload; damaged saved data gives the defaults with no console error. `rtl-check` found nothing high. Fixed from it: Hebrew names isolated in the warning line; invisible direction marks removed from names. Still to look at in `ui-check`: mixed Hebrew and English lines in the names box, Hebrew points in the 3D letters.
+- [x] Upload your own font file; a damaged file shows a message and changes nothing. Verify: uploaded font draws a name, is still there after reload. Result: in headless Chrome the list entry opens the file picker; a bad file shows the message and changes nothing; Arial uploaded, drew the names, and was still chosen and listed after a reload. Stored in IndexedDB, 20 MB limit. A font with a built-in font's name is listed as "Name (yours)". There is no way to remove an uploaded font yet.
 - [ ] Short help panel: how to open the file in Bambu Studio, and library credits (Clipper2, LibTessDotNet, SixLabors.Fonts). Verify: read through.
 
 ### Phase 4: Publish

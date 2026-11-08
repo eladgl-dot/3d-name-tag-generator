@@ -113,6 +113,13 @@ export function caretLine(textBox) {
   return textBox.value.slice(0, textBox.selectionStart).split('\n').length - 1;
 }
 
+/** Puts a list back on its current choice and opens a file picker. Clearing the picker lets the same file be chosen again. */
+export function pickFile(list, currentValue, picker) {
+  list.value = currentValue;
+  picker.value = '';
+  picker.click();
+}
+
 /** Hands a finished file to the browser as a download. */
 export function download(fileName, bytes, contentType) {
   const url = URL.createObjectURL(new Blob([bytes], { type: contentType }));
