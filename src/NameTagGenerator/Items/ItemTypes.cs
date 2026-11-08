@@ -14,7 +14,7 @@ public static class Keys
     public const string ClipWidth = "clipWidth", ClipLength = "clipLength", ClipBorder = "clipBorder", ClipGap = "clipGap";
     public const string FillGaps = "fillGaps";
     public const string Tilt = "tilt", StandDepth = "standDepth";
-    public const string RimThickness = "rimThickness", CupDiameter = "cupDiameter", GripLength = "gripLength", GripDepth = "gripDepth", SlotWall = "slotWall";
+    public const string RimThickness = "rimThickness", CupDiameter = "cupDiameter", GripLength = "gripLength", GripDepthInner = "gripDepthInner", GripDepthOuter = "gripDepthOuter", SlotWall = "slotWall";
     public const string StemDiameter = "stemDiameter", StemOpening = "stemOpening", StemWall = "stemWall", StemSide = "stemSide";
 }
 
@@ -34,6 +34,17 @@ public sealed class ItemSettings
     public double this[string key] => Values.GetValueOrDefault(key);
 
     public static ItemSettings DefaultsFor(IItemType item) => new() { Values = new Dictionary<string, double>(item.Defaults) };
+
+    /// <summary>Moves values saved by older versions to the settings that replaced them.</summary>
+    public void Upgrade()
+    {
+        // v0.1.2 and earlier: one Grip depth for both cup marker walls.
+        if (Values.Remove("gripDepth", out var depth))
+        {
+            Values.TryAdd(Keys.GripDepthInner, depth);
+            Values.TryAdd(Keys.GripDepthOuter, depth);
+        }
+    }
 }
 
 /// <summary>

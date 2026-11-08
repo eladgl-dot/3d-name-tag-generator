@@ -28,3 +28,7 @@ Rules to remember:
 - Hebrew in PowerShell 5 scripts: use `[char]` codes.
 
 GitHub: private repo https://github.com/eladgl-dot/3d-name-tag-generator, EXE under Releases. The old app copy (source_zip/ and its ZIP) stays local only. Add the full font licence texts before making anything public.
+
+v0.1.2 shows its version in the window title; the number comes from Version in the csproj, so raise it there for each build. Built to dist/0.1.2 because a copy was running from dist. Not committed or released yet.
+
+v0.1.3 (dist/0.1.3): cup marker has Inner grip depth and Outer grip depth instead of one Grip depth. 467 tests, Bambu headless check of a 5/12 mm sample: 2 parts, no mesh errors. Not seen in the app window, not printed, not committed.

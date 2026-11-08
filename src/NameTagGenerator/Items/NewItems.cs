@@ -92,17 +92,18 @@ public sealed class CupMarkerItem : IItemType
         new Field(Keys.CupDiameter, "Cup diameter (mm)", Min: 30, Step: 1),
         new Field(Keys.RimThickness, "Rim thickness (mm)", Min: 0.5, Step: 0.1),
         new Field(Keys.GripLength, "Grip length (mm)", Min: 10, Step: 1),
-        new Field(Keys.GripDepth, "Grip depth (mm)", Min: 2, Step: 1),
+        new Field(Keys.GripDepthInner, "Inner grip depth (mm)", Min: 2, Step: 1),
+        new Field(Keys.GripDepthOuter, "Outer grip depth (mm)", Min: 2, Step: 1),
         new Field(Keys.SlotWall, "Grip wall (mm)", Min: 1, Step: 0.5),
     };
 
     public IReadOnlyDictionary<string, double> Defaults { get; } = new Dictionary<string, double>
     {
         [Keys.FontSize] = 12, [Keys.BaseHeight] = 3, [Keys.LetterHeight] = 0.8, [Keys.Outline] = 2, [Keys.Weight] = 0, [Keys.ConnectorOutline] = 0, [Keys.FillGaps] = 4,
-        [Keys.CupDiameter] = 80, [Keys.RimThickness] = 3, [Keys.GripLength] = 30, [Keys.GripDepth] = 8, [Keys.SlotWall] = 2.5,
+        [Keys.CupDiameter] = 80, [Keys.RimThickness] = 3, [Keys.GripLength] = 30, [Keys.GripDepthInner] = 8, [Keys.GripDepthOuter] = 8, [Keys.SlotWall] = 2.5,
     };
 
-    /// <summary>The two walls as seen from the name side, with the cup's centre straight below the name.</summary>
+    /// <summary>The two walls as seen from the name side, inner wall first, with the cup's centre straight below the name.</summary>
     public sealed record GripShape(Paths64 Walls, Path64 Footprint, double CentreY, double Radius, double HalfAngle);
 
     public static GripShape Grip(ItemSettings s)
@@ -157,7 +158,6 @@ public sealed class CupMarkerItem : IItemType
         var plate = s[Keys.BaseHeight];
         var plateZ = Poly.U(plate);
         var letterZ = Poly.U(Math.Min(s[Keys.LetterHeight], Math.Max(plate - ThinnestPlateAboveLetters, plate / 2)));
-        var topZ = plateZ + Poly.U(s[Keys.GripDepth]);
 
         var body = new Mesh();
         body.Cap(new Paths64(area.Concat(pockets)), 0, facingUp: false);
@@ -165,8 +165,14 @@ public sealed class CupMarkerItem : IItemType
         body.Walls(pockets, 0, letterZ);
         body.Cap(letters, letterZ, facingUp: false);
         body.Cap(new Paths64(area.Concat(Poly.Reversed(walls))), plateZ, facingUp: true);
-        body.Walls(walls, plateZ, topZ);
-        body.Cap(walls, topZ, facingUp: true);
+        // Inside and outside the cup can need different depths, so each wall has its own.
+        foreach (var (wall, depth) in new[] { (walls[0], s[Keys.GripDepthInner]), (walls[1], s[Keys.GripDepthOuter]) })
+        {
+            var one = new Paths64 { wall };
+            var topZ = plateZ + Poly.U(depth);
+            body.Walls(one, plateZ, topZ);
+            body.Cap(one, topZ, facingUp: true);
+        }
 
         var flush = new Mesh();
         flush.Extrude(letters, 0, letterZ);

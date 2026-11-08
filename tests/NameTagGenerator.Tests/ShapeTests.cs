@@ -239,7 +239,7 @@ public class ShapeTests
         Assert.Equal(0, m.Letters.Vertices.Min(v => v.Z));
         Assert.Equal(Poly.U(s[Keys.LetterHeight]), m.Letters.Vertices.Max(v => v.Z));
         Assert.Equal(0, m.Base.Vertices.Min(v => v.Z));
-        Assert.Equal(Poly.U(s[Keys.BaseHeight] + s[Keys.GripDepth]), m.Base.Vertices.Max(v => v.Z));
+        Assert.Equal(Poly.U(s[Keys.BaseHeight] + Math.Max(s[Keys.GripDepthInner], s[Keys.GripDepthOuter])), m.Base.Vertices.Max(v => v.Z));
     }
 
     [Fact]
@@ -260,11 +260,65 @@ public class ShapeTests
     [Fact]
     public void CupMarker_PartsFillThePlateExactly_WithNoOverlap()
     {
-        var (m, s) = Build(new CupMarkerItem(), "ליב");
+        var (m, s) = Build(new CupMarkerItem(), "ליב", v =>
+        {
+            v.Values[Keys.GripDepthInner] = 5;
+            v.Values[Keys.GripDepthOuter] = 11;
+        });
         var plate = Clipper.Area(m.BaseArea) / (Poly.Scale * Poly.Scale) * s[Keys.BaseHeight];
-        var walls = Clipper.Area(Poly.Mirror(CupMarkerItem.Grip(s).Walls)) / (Poly.Scale * Poly.Scale) * s[Keys.GripDepth];
+        var grip = CupMarkerItem.Grip(s).Walls;
+        double Area(Path64 wall) => Math.Abs(Clipper.Area(wall)) / (Poly.Scale * Poly.Scale);
+        var walls = Area(grip[0]) * s[Keys.GripDepthInner] + Area(grip[1]) * s[Keys.GripDepthOuter];
 
         Assert.Equal(plate + walls, m.Base.VolumeMm3 + m.Letters.VolumeMm3, 0);
+    }
+
+    [Theory]
+    [InlineData(5, 12)]
+    [InlineData(12, 5)]
+    [InlineData(8, 8)]
+    public void CupMarker_InnerAndOuterWallsHaveTheirOwnDepth(double inner, double outer)
+    {
+        var (m, s) = Build(new CupMarkerItem(), "נויה", v =>
+        {
+            v.Values[Keys.GripDepthInner] = inner;
+            v.Values[Keys.GripDepthOuter] = outer;
+        });
+        var grip = CupMarkerItem.Grip(s);
+        var plate = s[Keys.BaseHeight];
+
+        Assert.True(m.Base.IsManifold(), m.Base.DescribeOpenEdges());
+        // The top of each wall, by its distance from the cup's centre: inside the rim or outside it.
+        double TopOf(bool insideRim) => Poly.Mm(m.Base.Vertices
+            .Where(v => Math.Sqrt(Math.Pow(Poly.Mm(v.X), 2) + Math.Pow(Poly.Mm(v.Y) - grip.CentreY, 2)) < grip.Radius == insideRim
+                        && Poly.Mm(v.Z) > plate + 0.01)
+            .Max(v => v.Z));
+        Assert.Equal(plate + inner, TopOf(insideRim: true), 3);
+        Assert.Equal(plate + outer, TopOf(insideRim: false), 3);
+    }
+
+    [Fact]
+    public void CupMarker_OldGripDepthCarriesOverToBothWalls()
+    {
+        var s = new ItemSettings { Values = new Dictionary<string, double> { [Keys.CupDiameter] = 90, ["gripDepth"] = 6 } };
+
+        s.Upgrade();
+
+        Assert.Equal(6, s[Keys.GripDepthInner]);
+        Assert.Equal(6, s[Keys.GripDepthOuter]);
+        Assert.False(s.Values.ContainsKey("gripDepth"));
+        Assert.Equal(90, s[Keys.CupDiameter]);
+    }
+
+    [Fact]
+    public void CupMarker_UpgradeKeepsWallDepthsAlreadySet()
+    {
+        var s = new ItemSettings { Values = new Dictionary<string, double> { [Keys.GripDepthInner] = 4, [Keys.GripDepthOuter] = 9 } };
+
+        s.Upgrade();
+
+        Assert.Equal(4, s[Keys.GripDepthInner]);
+        Assert.Equal(9, s[Keys.GripDepthOuter]);
     }
 
     [Fact]

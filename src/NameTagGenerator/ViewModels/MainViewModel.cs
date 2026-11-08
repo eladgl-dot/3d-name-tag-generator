@@ -128,6 +128,7 @@ public sealed class MainViewModel : Observable
                 s = ItemSettings.DefaultsFor(_item);
                 _state.Items[_item.Id] = s;
             }
+            s.Upgrade();
             // Settings added in a newer version get their default value.
             foreach (var (key, value) in _item.Defaults) s.Values.TryAdd(key, value);
             return s;

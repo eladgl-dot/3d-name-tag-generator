@@ -24,7 +24,7 @@ public partial class HelpWindow : Window
             "Fill gaps up to: closes narrow gaps and pockets in the base between letters. 0 turns this off.\n\n" +
             "Between two words: the connector joins two-word names on one line. Solid raises it like a letter. Hollow leaves it in the base colour only, and you can make its outline larger.\n\n" +
             "Desk name plate: Base height is its thickness at the top. It prints standing up, as it will sit on the desk.\n\n" +
-            "Cup marker: a saddle that sits on top of the rim, with the name facing up. Set Cup diameter (across the outside) and Rim thickness to your cup, and the curved groove grips that rim. In Bambu Studio it appears upside down and mirrored, because it prints name side down with no supports. Do not flip it.\n\n" +
+            "Cup marker: a saddle that sits on top of the rim, with the name facing up. Set Cup diameter (across the outside) and Rim thickness to your cup, and the curved groove grips that rim. Inner and Outer grip depth set how far each wall reaches down the inside and the outside of the cup. In Bambu Studio it appears upside down and mirrored, because it prints name side down with no supports. Do not flip it.\n\n" +
             "Wine glass marker: set Stem size to your glass. The opening is narrower than the stem, so the clip snaps on and holds.\n\n" +
             "Base and Letters above the preview choose the colours you see. They change only the preview, and you pick the real filaments in Bambu Studio.\n\n" +
             "Each item remembers its own settings."),

@@ -8,7 +8,7 @@ Background: [app-overview.md](../app-overview.md). Mockup: [main window](../mock
 ## Status
 | Item | Value |
 |---|---|
-| Status | v0.1.1, Arrange menu and the 3 new items built, cup marker redesigned. Cup marker printed by the owner and looks great. Waiting for the owner: other real prints |
+| Status | v0.1.3 (cup marker inner and outer grip depth set separately; version in the window title), Arrange menu and the 3 new items built, cup marker redesigned. Cup marker printed by the owner and looks great. Waiting for the owner: other real prints |
 | Output | `dist/3D name tag generator.exe`, about 700 KB, one file |
 
 ## Questions (waiting for answers)
@@ -58,6 +58,7 @@ Fourth round, 2026-11-07:
 - Cup marker: "i think it will fall - not a good design". Needs a redesign.
 - Cup marker redesign: A, saddle along the rim. Pictures: [cup marker options](../mockups/2026-11-07-cup-marker.html).
 - After the first cup marker print: fit is too loose (1C). Fix by entering a smaller Rim thickness and printing again. Commit and push to GitHub with the EXE (2A). Stop for now (3C).
+- Owner (2026-11-08): let the inner and outer wall heights be set separately. Done in v0.1.3.
 
 ## Decisions
 From the owner:
@@ -74,7 +75,7 @@ Made during the build:
 - Removed from the old app: `.scad` export, Gemini, "Reverse text".
 - Arrange menu: one Gap setting replaces Gap across and Gap down, following the mockup. The menu sits at the preview's right edge, not under its button as in the mockup, so it does not cover the names.
 - Shape buttons keep working as names are added. Order changes the plate only, not the names list.
-- Cup marker prints name side down and mirrored, with flush letters and no supports. The preview turns it name side up; files stay in print position. Default grip 30 mm of rim, 8 mm deep, on an 80 mm cup. The groove is the rim plus 0.2 mm.
+- Cup marker prints name side down and mirrored, with flush letters and no supports. The preview turns it name side up; files stay in print position. Default grip 30 mm of rim on an 80 mm cup. Inner and Outer grip depth (8 mm each) set each wall separately; an old saved Grip depth carries over to both. The groove is the rim plus 0.2 mm.
 
 ## Build 0.1: Prototype (done)
 - [x] .NET 10 WPF single-file publish. Verified: one EXE, 657 KB
