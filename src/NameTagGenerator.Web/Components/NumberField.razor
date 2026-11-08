@@ -1,0 +1,36 @@
+@using System.Globalization
+
+<label>
+    @Label
+    <input type="text" inputmode="decimal" dir="ltr" value="@_text" class="@(_valid ? null : "bad")" aria-invalid="@(_valid ? "false" : "true")" @oninput="Changed" />
+</label>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Min { get; set; }
+    [Parameter] public EventCallback<double> ValueChanged { get; set; }
+
+    string _text = "";
+    bool _valid = true;
+    double _shown = double.NaN;
+
+    // Keeps what was typed, so "1." can be on the way to "1.5".
+    protected override void OnParametersSet()
+    {
+        if (Value.Equals(_shown)) return;
+        _shown = Value;
+        _text = Value.ToString("0.###", CultureInfo.InvariantCulture);
+        _valid = true;
+    }
+
+    async Task Changed(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+        _valid = double.TryParse(_text.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+            && double.IsFinite(number) && number >= Min;
+        if (!_valid) return;
+        _shown = number;
+        await ValueChanged.InvokeAsync(number);
+    }
+}

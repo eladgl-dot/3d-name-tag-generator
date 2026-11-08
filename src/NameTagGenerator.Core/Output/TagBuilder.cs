@@ -70,10 +70,19 @@ public static class Exporter
     public static void SaveStl(string path, IEnumerable<PlacedTag> tags)
     {
         using var file = File.Create(path);
-        StlWriter.Write(file, tags.SelectMany(t => new[] { (t.Model.Base, t.X, t.Y), (t.Model.Letters, t.X, t.Y) }));
+        WriteStl(file, tags);
     }
 
     public static void Save3mf(string path, string title, IEnumerable<PlacedTag> tags)
+    {
+        using var file = File.Create(path);
+        Write3mf(file, title, tags);
+    }
+
+    public static void WriteStl(Stream output, IEnumerable<PlacedTag> tags) =>
+        StlWriter.Write(output, tags.SelectMany(t => new[] { (t.Model.Base, t.X, t.Y), (t.Model.Letters, t.X, t.Y) }));
+
+    public static void Write3mf(Stream output, string title, IEnumerable<PlacedTag> tags)
     {
         var bases = new Mesh();
         var letters = new Mesh();
@@ -82,8 +91,7 @@ public static class Exporter
             bases.AddMoved(t.Model.Base, Poly.U(t.X), Poly.U(t.Y));
             letters.AddMoved(t.Model.Letters, Poly.U(t.X), Poly.U(t.Y));
         }
-        using var file = File.Create(path);
-        ThreeMfWriter.Write(file, title, bases, letters);
+        ThreeMfWriter.Write(output, title, bases, letters);
     }
 
     public static string SafeFileName(string name)

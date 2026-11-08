@@ -1,0 +1,381 @@
+﻿@page "/"
+@using System.Globalization
+@inject IJSRuntime JS
+
+<PageTitle>3D name tag generator</PageTitle>
+
+<div class="page">
+    <div class="frame">
+        <header class="top">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="4" fill="var(--base)" /><circle cx="6.5" cy="12" r="1.6" fill="var(--panel)" /><rect x="10" y="10" width="9" height="4" rx="1" fill="#fff" /></svg>
+            <h1>3D name tag generator</h1>
+            <span class="ver">v@(Version)</span>
+            <span class="grow"></span>
+            <a class="link" href="https://github.com/eladgl-dot/3d-name-tag-generator" target="_blank" rel="noopener">GitHub</a>
+        </header>
+
+        <div class="layout">
+            <aside>
+                <section>
+                    <h2><label for="names" style="font:inherit;color:inherit">Names (one per line)</label></h2>
+                    <textarea id="names" dir="auto" @ref="_namesBox" @bind="_state.NamesText" @bind:event="oninput" @bind:after="ScheduleRebuild" @onkeyup="CaretMoved" @onclick="CaretMoved"></textarea>
+                    <p class="hint">@NameCount. Hebrew and English both work. Click a name to preview it.</p>
+                </section>
+
+                <section>
+                    <h2>Item</h2>
+                    <div class="chips">
+                        @foreach (var item in ItemRegistry.All)
+                        {
+                            <button type="button" class="chip @(item.Id == _state.Item.Id ? "on" : null)" aria-pressed="@(item.Id == _state.Item.Id ? "true" : "false")" @onclick="() => SelectItem(item)">@item.Name</button>
+                        }
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Letters</h2>
+                    <div class="grid">
+                        <label class="full">
+                            Font
+                            <select @bind="Settings.Font" @bind:after="ScheduleRebuild">
+                                @foreach (var group in FontGroups)
+                                {
+                                    <optgroup label="@group.Label">
+                                        @foreach (var font in group.Fonts)
+                                        {
+                                            <option value="@font">@font</option>
+                                        }
+                                    </optgroup>
+                                }
+                            </select>
+                        </label>
+                        <div class="full"><Toggle Label="Bold" @bind-Value="Settings.Bold" @bind-Value:after="ScheduleRebuild" /></div>
+                        @foreach (var field in ItemRegistry.CommonFields)
+                        {
+                            <FieldEditor @key="@($"{_state.Item.Id}/{field.Key}")" Field="field" Settings="Settings" Changed="ScheduleRebuild" />
+                        }
+                        <label class="full">
+                            Connector
+                            <select @bind="Settings.Connector" @bind:after="ScheduleRebuild">
+                                @foreach (var (label, value) in Connectors)
+                                {
+                                    <option value="@value">@label</option>
+                                }
+                            </select>
+                        </label>
+                        <div class="full"><Toggle Label="Hollow (base colour only)" @bind-Value="Settings.Hollow" @bind-Value:after="ScheduleRebuild" /></div>
+                        @if (Settings.Hollow)
+                        {
+                            <div class="full">
+                                <NumberField @key="@($"{_state.Item.Id}/connector")" Label="Extra connector outline (mm)" Min="-50" Value="@Settings[Keys.ConnectorOutline]" ValueChanged="SetConnectorOutline" />
+                            </div>
+                        }
+                    </div>
+                </section>
+
+                @if (_state.Item.Fields.Count > 0)
+                {
+                    <section>
+                        <h2>@_state.Item.Name settings</h2>
+                        <div class="grid">
+                            @foreach (var field in _state.Item.Fields)
+                            {
+                                <FieldEditor @key="@($"{_state.Item.Id}/{field.Key}")" Field="field" Settings="Settings" Changed="ScheduleRebuild" />
+                            }
+                        </div>
+                    </section>
+                }
+
+                <section>
+                    <h2>Colours</h2>
+                    <div class="colours">
+                        <label class="sw"><input type="color" @bind="_state.BaseColour" @bind:event="oninput" @bind:after="ApplyColours" />Base</label>
+                        <label class="sw"><input type="color" @bind="_state.LetterColour" @bind:event="oninput" @bind:after="ApplyColours" />Letters</label>
+                    </div>
+                </section>
+            </aside>
+
+            <main>
+                <div class="view">
+                    <div class="canvas" @ref="_canvasHost"></div>
+                    <div class="tools">
+                        <div class="seg">
+                            <button type="button" class="@(_previewAll ? null : "on")" aria-pressed="@(_previewAll ? "false" : "true")" @onclick="() => SetPreviewAll(false)">This name</button>
+                            <button type="button" class="@(_previewAll ? "on" : null)" aria-pressed="@(_previewAll ? "true" : "false")" @onclick="() => SetPreviewAll(true)">All names</button>
+                        </div>
+                        <span class="grow"></span>
+                        <button type="button" class="secondary small arrange-button" popovertarget="arrange-menu">Arrange ▾</button>
+                    </div>
+                    <div id="arrange-menu" class="menu" popover>
+                        <div class="grid">
+                            <label class="full">
+                                Shape
+                                <select @bind="_state.Arrange.Shape" @bind:after="ScheduleRebuild">
+                                    <option value="@ArrangeShape.Columns">Columns</option>
+                                    <option value="@ArrangeShape.OneRow">One row</option>
+                                    <option value="@ArrangeShape.OneColumn">One column</option>
+                                    <option value="@ArrangeShape.Square">Square</option>
+                                </select>
+                            </label>
+                            <label class="full">
+                                Order
+                                <select @bind="_state.Arrange.Order" @bind:after="ScheduleRebuild">
+                                    <option value="@ArrangeOrder.AsListed">As listed</option>
+                                    <option value="@ArrangeOrder.Alphabetical">Alphabetical</option>
+                                    <option value="@ArrangeOrder.BySize">By size</option>
+                                </select>
+                            </label>
+                            @if (_state.Arrange.Shape == ArrangeShape.Columns)
+                            {
+                                <div class="full"><NumberField Label="Columns (0 = auto)" Value="@_state.Arrange.Columns" ValueChanged="SetColumns" /></div>
+                            }
+                            <div class="full"><NumberField Label="Gap (mm)" Value="@_state.Arrange.GapX" ValueChanged="SetGap" /></div>
+                            <NumberField Label="Plate width (mm)" Min="10" Value="@_state.Arrange.PlateWidth" ValueChanged="SetPlateWidth" />
+                            <NumberField Label="Plate depth (mm)" Min="10" Value="@_state.Arrange.PlateHeight" ValueChanged="SetPlateDepth" />
+                        </div>
+                    </div>
+                    <div class="stage">
+                        @if (_noWebGl)
+                        {
+                            <p>This browser can't show 3D. Downloads still work.</p>
+                        }
+                        else if (_names.Count == 0)
+                        {
+                            <p>Type a name to see it here.</p>
+                        }
+                    </div>
+                    <span class="tip">Drag to turn, scroll to zoom</span>
+                </div>
+                <div class="status" role="status">
+                    <span>@_status</span>
+                    @if (_warning.Length > 0)
+                    {
+                        <span class="warning">@_warning</span>
+                    }
+                </div>
+                <div class="bar">
+                    <button type="button" class="primary" disabled="@NothingToSave" @onclick="Download3mf">Download 3MF</button>
+                    <button type="button" class="secondary" disabled="@NothingToSave" @onclick="DownloadStl">Download STL</button>
+                    <p class="hint">Double-click the 3MF to open it in Bambu Studio. Base and letters come in as two parts, ready for two colours.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+@code {
+    const double PetgGramsPerCm3 = 1.27;
+
+    static readonly string Version = typeof(App).Assembly.GetName().Version?.ToString(2) ?? "";
+
+    static readonly (string Label, string Value)[] Connectors =
+    {
+        ("Hyphen (-)", "-"), ("En dash (–)", "–"), ("Em dash (—)", "—"), ("Underscore (_)", "_"),
+        ("Dot (.)", "."), ("Tilde (~)", "~"), ("Just a space", " "),
+    };
+
+    static readonly (string Label, List<string> Fonts)[] FontGroups = BuildFontGroups();
+
+    readonly SiteState _state = new();
+    readonly TagBuilder _builder = new();
+    CancellationTokenSource? _rebuild;
+    BuildResult? _result;
+    List<string> _names = new();
+    string _status = "";
+    string _warning = "";
+
+    ElementReference _namesBox;
+    ElementReference _canvasHost;
+    IJSObjectReference? _preview;
+    IJSObjectReference? _downloads;
+    bool _noWebGl;
+    bool _previewAll;
+    bool _fitView = true;
+    string _selectedName = "";
+
+    ItemSettings Settings => _state.Settings;
+    bool NothingToSave => _result is null || _result.Tags.Count == 0;
+    string NameCount => _state.Names.Count == 1 ? "1 name" : $"{_state.Names.Count} names";
+
+    static (string, List<string>)[] BuildFontGroups()
+    {
+        string Group(string name)
+        {
+            var font = BundledFonts.All[name];
+            return font.HasHebrew && font.HasEnglish ? "Hebrew and English" : font.HasHebrew ? "Hebrew" : "English only";
+        }
+        return new[] { "Hebrew and English", "Hebrew", "English only" }
+            .Select(label => (label, BundledFonts.Names.Where(n => Group(n) == label).ToList()))
+            .Where(g => g.Item2.Count > 0)
+            .ToArray();
+    }
+
+    protected override Task OnInitializedAsync() => ScheduleRebuild();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/preview.js");
+        if (await module.InvokeAsync<bool>("init", _canvasHost))
+        {
+            _preview = module;
+            await ShowPreview();
+        }
+        else
+        {
+            _noWebGl = true;
+            StateHasChanged();
+        }
+        _downloads = module;
+    }
+
+    Task SelectItem(IItemType item)
+    {
+        _state.ActiveItem = item.Id;
+        _fitView = true;
+        return ScheduleRebuild();
+    }
+
+    Task SetPreviewAll(bool all)
+    {
+        _previewAll = all;
+        _fitView = true;
+        return ShowPreview();
+    }
+
+    /// <summary>In "This name" mode, the line the caret is on is the name to show.</summary>
+    async Task CaretMoved()
+    {
+        if (_preview is null || _previewAll) return;
+        var line = await _preview.InvokeAsync<int>("caretLine", _namesBox);
+        var lines = _state.NamesText.Split('\n');
+        var name = line < lines.Length ? lines[line].Trim() : "";
+        if (name.Length == 0 || name == _selectedName) return;
+        _selectedName = name;
+        // A name still being typed is not built yet; the next build shows it.
+        if (_result?.Tags.Any(t => t.Name == name) == true)
+        {
+            _fitView = true;
+            await ShowPreview();
+        }
+    }
+
+    async Task ApplyColours()
+    {
+        if (_preview is not null) await _preview.InvokeVoidAsync("setColours", _state.BaseColour, _state.LetterColour);
+    }
+
+    IReadOnlyCollection<PlacedTag> TagsToShow()
+    {
+        if (_result is null || _result.Tags.Count == 0) return Array.Empty<PlacedTag>();
+        if (_previewAll) return _result.Tags.ToList();
+        var first = _names.Count > 0 ? _names[0] : "";
+        var tag = _result.Tags.FirstOrDefault(t => t.Name == _selectedName)
+            ?? _result.Tags.FirstOrDefault(t => t.Name == first)
+            ?? _result.Tags[0];
+        return new[] { tag };
+    }
+
+    async Task ShowPreview()
+    {
+        if (_preview is null) return;
+        try
+        {
+            var tags = TagsToShow();
+            var bases = PreviewMesh.Base(tags);
+            var letters = PreviewMesh.Letters(tags);
+            var plate = _previewAll && tags.Count > 0;
+            await _preview.InvokeVoidAsync("show", bases.Positions, bases.Indices, letters.Positions, letters.Indices,
+                plate ? _state.Arrange.PlateWidth : 0, plate ? _state.Arrange.PlateHeight : 0, _state.BaseColour, _state.LetterColour, _fitView && tags.Count > 0);
+            if (tags.Count > 0) _fitView = false;
+        }
+        catch (JSException ex)
+        {
+            _warning = "Could not draw the preview: " + ex.Message;
+            StateHasChanged();
+        }
+    }
+
+    string DownloadName => _result is { Tags.Count: 1 } r ? Exporter.SafeFileName(r.Tags[0].Name) : "name tags";
+
+    Task Download3mf()
+    {
+        using var file = new MemoryStream();
+        Exporter.Write3mf(file, DownloadName, _result!.Tags);
+        return SendFile(DownloadName + ".3mf", file, "model/3mf");
+    }
+
+    Task DownloadStl()
+    {
+        using var file = new MemoryStream();
+        Exporter.WriteStl(file, _result!.Tags);
+        return SendFile(DownloadName + ".stl", file, "model/stl");
+    }
+
+    async Task SendFile(string name, MemoryStream file, string contentType)
+    {
+        if (_downloads is not null) await _downloads.InvokeVoidAsync("download", name, file.ToArray(), contentType);
+    }
+
+    Task SetConnectorOutline(double v) { Settings.Values[Keys.ConnectorOutline] = v; return ScheduleRebuild(); }
+    Task SetColumns(double v) { _state.Arrange.Columns = (int)v; return ScheduleRebuild(); }
+    Task SetGap(double v) { _state.Arrange.GapX = _state.Arrange.GapY = v; return ScheduleRebuild(); }
+    Task SetPlateWidth(double v) { _state.Arrange.PlateWidth = v; return ScheduleRebuild(); }
+    Task SetPlateDepth(double v) { _state.Arrange.PlateHeight = v; return ScheduleRebuild(); }
+
+    /// <summary>Waits for typing to pause, then builds. The browser runs this on its one thread, so the pause keeps typing smooth.</summary>
+    async Task ScheduleRebuild()
+    {
+        _rebuild?.Cancel();
+        var cancel = _rebuild = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(250, cancel.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+        await Rebuild(cancel.Token);
+    }
+
+    async Task Rebuild(CancellationToken cancel)
+    {
+        var names = _state.Names;
+        if (!names.SequenceEqual(_names)) _fitView = true;
+        _names = names;
+        _warning = "";
+        try
+        {
+            _result = _builder.Build(_names, _state.Item, Settings, _state.Arrange, cancel);
+            _status = Describe(_result);
+            _warning = Problems(_result);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            _result = null;
+            _status = "";
+            _warning = "Could not build this: " + ex.Message;
+        }
+        await ShowPreview();
+        StateHasChanged();
+    }
+
+    static string Describe(BuildResult r)
+    {
+        if (r.Tags.Count == 0) return "";
+        var a = r.Array;
+        var grams = r.VolumeMm3 / 1000 * PetgGramsPerCm3;
+        var names = r.Tags.Count == 1 ? "1 name" : $"{r.Tags.Count} names, {a.Columns} × {a.Rows}";
+        return string.Create(CultureInfo.InvariantCulture, $"{a.TotalWidth:0} × {a.TotalHeight:0} × {r.HeightMm:0.#} mm, {names}, up to {grams:0.#} g PETG");
+    }
+
+    string Problems(BuildResult r)
+    {
+        var problems = new List<string>();
+        if (!r.Array.FitsPlate) problems.Add(string.Create(CultureInfo.InvariantCulture, $"Does not fit the {_state.Arrange.PlateWidth:0} × {_state.Arrange.PlateHeight:0} mm plate"));
+        var loose = r.NamesWithLooseParts.Take(3).ToList();
+        if (loose.Count > 0) problems.Add("Loose parts in: " + string.Join(", ", loose));
+        return string.Join(". ", problems);
+    }
+}

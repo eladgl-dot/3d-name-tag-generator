@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/NameTagGenerator.Core/NameTagGenerator.Core.csproj" />
+    <Project Path="src/NameTagGenerator.Web/NameTagGenerator.Web.csproj" />
     <Project Path="src/NameTagGenerator/NameTagGenerator.csproj" />
   </Folder>
   <Folder Name="/tests/">

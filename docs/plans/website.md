@@ -50,9 +50,9 @@ None right now.
 Changes the owner will notice: a letter the chosen font does not have now comes from Rubik, not a Windows font, in both the EXE and the website.
 
 ### Phase 3: The website
-- [ ] Blazor WebAssembly project, page laid out like the mockup, from the same design tokens. Verify: runs locally.
-- [ ] 3D preview with three.js, name side up, same colours. Verify: screenshot check.
-- [ ] Download 3MF and STL from the browser. Verify: downloaded 3MF passes the Bambu headless check.
+- [x] Blazor WebAssembly project, page laid out like the mockup, from the same design tokens. Verify: runs locally. Result: Release (trimmed) build served locally and driven in headless Chrome: all 6 items build, Alphabetical runs on an en-US browser with no error, no console errors, no sideways scroll at phone width, light and dark checked. About 3.5 MB compressed.
+- [x] 3D preview with three.js, name side up, same colours. Verify: screenshot check. Result: checked in headless Chrome with software 3D: Hebrew reads correctly, clicking a name line switches the preview, colours redraw, drag turns the view, All names shows the plate, Alphabetical runs from the top right. three.js 0.170 is copied into the site (no CDN). Not tried on a real graphics card or by touch.
+- [x] Download 3MF and STL from the browser. Verify: downloaded 3MF passes the Bambu headless check. Result: all 6 items downloaded from the browser; Bambu headless: 2 parts each, no mesh repairs. Downloads hold every name, placed as arranged.
 - [ ] Remember settings in the browser; Hebrew right-to-left everywhere. Verify: `rtl-check`, reload keeps settings.
 - [ ] Upload your own font file; a damaged file shows a message and changes nothing. Verify: uploaded font draws a name, is still there after reload.
 - [ ] Short help panel: how to open the file in Bambu Studio, and library credits (Clipper2, LibTessDotNet, SixLabors.Fonts). Verify: read through.
