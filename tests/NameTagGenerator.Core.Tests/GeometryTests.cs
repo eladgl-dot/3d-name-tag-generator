@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using Clipper2Lib;
 using NameTagGenerator.Geometry;
 using NameTagGenerator.Items;
@@ -56,7 +56,7 @@ public class StlTests
 
 public class TextTests
 {
-    static readonly System.Windows.Media.FontFamily Arial = new("Arial");
+    static readonly OutlineFont Arial = BundledFonts.Get("Rubik");
 
     [Fact]
     public void HebrewName_IsNotMirrored_FirstLetterIsOnTheRight()
@@ -93,36 +93,18 @@ public class TextTests
         Assert.Equal(solidBounds.MaxX, hollowBounds.MaxX);
     }
 
-    [Theory]
-    [InlineData("Gan CLM")]
-    [InlineData("MigdalHaemeq")]
-    [InlineData("Noot")]
-    [InlineData("Suez One")]
-    public void BuiltInFont_LoadsFromInsideTheApp_AndDrawsHebrew(string fontName)
-    {
-        var family = FontCatalog.Resolve(fontName);
-        var builtIn = TextOutliner.Build("שלום", family, false, 18, "-", false);
-
-        Assert.NotEmpty(builtIn.Letters);
-        // It must be the bundled file itself, not a font Windows substituted.
-        var typeface = new System.Windows.Media.Typeface(family, System.Windows.FontStyles.Normal, System.Windows.FontWeights.Normal, System.Windows.FontStretches.Normal);
-        Assert.True(typeface.TryGetGlyphTypeface(out var glyphs));
-        Assert.Contains(fontName, glyphs.FamilyNames.Values);
-        Assert.Contains(FontCatalog.AppDataFolder.Replace('\\', '/'), Uri.UnescapeDataString(glyphs.FontUri.AbsoluteUri), StringComparison.OrdinalIgnoreCase);
-    }
-
     static string SampleFor(string font) =>
-        FontCatalog.ListAll().Single(f => f.Name == font).Group == FontCatalog.BuiltInEnglishGroup ? "Hello" : "שלום";
+        BundledFonts.Get(font).HasHebrew ? "שלום" : "Hello";
 
     [Fact]
     public void BuiltInFonts_AllDrawDifferently()
     {
         // Each font in its own script, so a font never falls back to a Windows font here.
-        var widths = FontCatalog.BuiltIn
-            .Select(n => Poly.Bounds(TextOutliner.Build(SampleFor(n), FontCatalog.Resolve(n), false, 18, "-", false).Letters).Width)
+        var widths = BundledFonts.Names
+            .Select(n => Poly.Bounds(TextOutliner.Build(SampleFor(n), BundledFonts.Get(n), false, 18, "-", false).Letters).Width)
             .ToList();
 
-        Assert.Equal(FontCatalog.BuiltIn.Count, widths.Distinct().Count());
+        Assert.Equal(BundledFonts.Names.Count, widths.Distinct().Count());
     }
 
     [Fact]
@@ -132,34 +114,16 @@ public class TextTests
         {
             "Alef", "Assistant", "Bebas Neue", "Chewy", "Comfortaa", "Fredoka", "Gan CLM", "Heebo", "Lobster",
             "MigdalHaemeq", "Noot", "Pacifico", "Righteous", "Rubik", "Secular One", "Suez One", "Varela Round",
-        }, FontCatalog.BuiltIn.OrderBy(n => n));
-    }
-
-    [Theory]
-    [InlineData("Rubik", FontCatalog.BuiltInBothGroup)]
-    [InlineData("Alef", FontCatalog.BuiltInBothGroup)]
-    [InlineData("Gan CLM", FontCatalog.BuiltInHebrewGroup)]
-    [InlineData("Pacifico", FontCatalog.BuiltInEnglishGroup)]
-    [InlineData("Bebas Neue", FontCatalog.BuiltInEnglishGroup)]
-    public void BuiltInFonts_AreGroupedByTheLettersTheyHave(string font, string group)
-    {
-        Assert.Equal(group, FontCatalog.ListAll().Single(f => f.Name == font).Group);
-    }
-
-    [Fact]
-    public void BuiltInFonts_ComeFirst_GroupedTogether()
-    {
-        var groups = FontCatalog.ListAll().Select(f => f.Group).Distinct().ToList();
-        Assert.Equal(new[] { FontCatalog.BuiltInBothGroup, FontCatalog.BuiltInHebrewGroup, FontCatalog.BuiltInEnglishGroup }, groups.Take(3));
+        }, BundledFonts.Names.OrderBy(n => n));
     }
 
     [Fact]
     public void BuiltInFonts_HaveNoPartsTooThinToPrint()
     {
         // Parts under 0.8 mm (two nozzle widths) vanish when shrunk and regrown by 0.4 mm.
-        foreach (var font in FontCatalog.BuiltIn)
+        foreach (var font in BundledFonts.Names)
         {
-            var letters = TextOutliner.Build(SampleFor(font) + " נויה Noa", FontCatalog.Resolve(font), false, 12, "", false).Letters;
+            var letters = TextOutliner.Build(SampleFor(font) + " נויה Noa", BundledFonts.Get(font), false, 12, "", false).Letters;
             var opened = Poly.Inflate(Poly.Inflate(letters, -0.4), 0.4);
             var lost = 1 - Clipper.Area(opened) / Clipper.Area(letters);
             Assert.True(lost < 0.03, $"{font}: {lost:P1} of the letters is thinner than 0.8 mm");
@@ -170,7 +134,7 @@ public class TextTests
 public class ItemTests
 {
     static TextShape Shape(string name = "ליב") =>
-        TextOutliner.Build(name, new System.Windows.Media.FontFamily("Arial"), false, 18, "-", false);
+        TextOutliner.Build(name, BundledFonts.Get("Rubik"), false, 18, "-", false);
 
     static ItemSettings Defaults(IItemType item) => ItemSettings.DefaultsFor(item);
 

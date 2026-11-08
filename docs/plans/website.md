@@ -18,13 +18,16 @@ None right now.
 - 8A Same font list in the EXE.
 - 9A Sample names in tests and docs are fine to show publicly.
 - 10A MIT licence for the app's own code.
+- 11A Include font upload on the website, as 7A says.
+- 12A Stay on SixLabors.Fonts 2.1.3: no licence key needed, but no new fixes from upstream.
 
 ## What the website does (first version)
 - Same items: keychain, pencil top, bookmark, desk plate, cup marker, wine glass marker.
 - Names list, all item settings, colours, Arrange (rows, columns, order), 3D preview.
 - **Download 3MF** (two parts, two colours, opens in Bambu Studio by double-click) and **Download STL**.
 - Settings remembered in the browser.
-- Not on the website: Send to Bambu (a browser cannot open Bambu), adding your own font, crash log.
+- Upload your own font file (kept in the browser).
+- Not on the website: Send to Bambu (a browser cannot open Bambu), crash log.
 
 ## Steps
 
@@ -39,17 +42,20 @@ None right now.
 - [x] Print check for each font: Hebrew and English sample names build closed meshes with no part thinner than 0.8 mm at 12 mm size; drop the ones that fail. Verify: test per font. Result: Frank Ruhl Libre dropped (16-20% thinner than 0.8 mm); the other 13 new fonts lose 2% or less. 17 fonts built in, grouped Hebrew and English / Hebrew / English in the EXE font list. 1410 tests pass.
 
 ### Phase 2: Split out the shared code
-- [ ] New project NameTagGenerator.Core (no WPF): Geometry, Items, file writers. Verify: builds; the EXE still builds.
-- [ ] Letters to outlines with a font reader that works in a browser (SixLabors.Fonts), replacing the Windows text drawing. Test first: Hebrew and English names, right-to-left order, bold, connector. Verify: outline sizes match the old ones within 0.1 mm.
-- [ ] Move the tests to the shared code. Verify: all tests pass.
-- [ ] EXE uses the shared code. Verify: same 3MF volumes as v0.1.3 for each item; Bambu headless check clean.
+- [x] New project NameTagGenerator.Core (no WPF): Geometry, Items, file writers. Verify: builds; the EXE still builds. Result: Debug and Release both build with 0 warnings.
+- [x] Letters to outlines with a font reader that works in a browser (SixLabors.Fonts), replacing the Windows text drawing. Test first: Hebrew and English names, right-to-left order, bold, connector. Verify: outline sizes match the old ones within 0.1 mm. Result: all 17 fonts and Arial match within 0.1 mm, regular and bold, except Righteous, about 0.2 mm tighter (it applies a kerning pair Windows skipped). Fonts with no bold file copy Windows' fake bold. The old outliner is kept in the tests as the yardstick.
+- [x] Move the tests to the shared code. Verify: all tests pass. Result: 1309 in NameTagGenerator.Core.Tests (plain .NET, no WPF) and 37 Windows-only in NameTagGenerator.Tests. The sweep's Arial cases were dropped because the shared tests have only bundled fonts; Arial is still in the parity tests.
+- [x] EXE uses the shared code. Verify: same 3MF volumes as v0.1.3 for each item; Bambu headless check clean. Result: volumes within 1% of the old Windows outlines, for 4 sample font and name pairs per item; Bambu headless: all 6 items and an array load with 2 parts and no mesh repairs. Not yet opened by hand in the app window.
+
+Changes the owner will notice: a letter the chosen font does not have now comes from Rubik, not a Windows font, in both the EXE and the website.
 
 ### Phase 3: The website
 - [ ] Blazor WebAssembly project, page laid out like the mockup, from the same design tokens. Verify: runs locally.
 - [ ] 3D preview with three.js, name side up, same colours. Verify: screenshot check.
 - [ ] Download 3MF and STL from the browser. Verify: downloaded 3MF passes the Bambu headless check.
 - [ ] Remember settings in the browser; Hebrew right-to-left everywhere. Verify: `rtl-check`, reload keeps settings.
-- [ ] Short help panel: how to open the file in Bambu Studio. Verify: read through.
+- [ ] Upload your own font file; a damaged file shows a message and changes nothing. Verify: uploaded font draws a name, is still there after reload.
+- [ ] Short help panel: how to open the file in Bambu Studio, and library credits (Clipper2, LibTessDotNet, SixLabors.Fonts). Verify: read through.
 
 ### Phase 4: Publish
 - [ ] GitHub Actions: build and publish to GitHub Pages on every push to main. Verify: site live at https://eladgl-dot.github.io/3d-name-tag-generator/

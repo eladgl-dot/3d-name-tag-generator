@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/NameTagGenerator.Core/NameTagGenerator.Core.csproj" />
     <Project Path="src/NameTagGenerator/NameTagGenerator.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/NameTagGenerator.Core.Tests/NameTagGenerator.Core.Tests.csproj" />
     <Project Path="tests/NameTagGenerator.Tests/NameTagGenerator.Tests.csproj" />
   </Folder>
 </Solution>

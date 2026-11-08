@@ -61,7 +61,7 @@ public partial class HelpWindow : Window
             "Chewy, © 2010 Font Diner, Apache License 2.0.\n" +
             "Alef, Assistant, Bebas Neue, Comfortaa, Fredoka, Heebo, Lobster, MigdalHaemeq, Noot, Pacifico, Righteous, Rubik, Secular One, Suez One and Varela Round: SIL Open Font License 1.1, © their authors.\n" +
             "Full licence texts: https://github.com/eladgl-dot/3d-name-tag-generator/tree/main/assets/fonts/licences\n\n" +
-            "Libraries: Clipper2 by Angus Johnson (Boost Software License), LibTessDotNet (SGI Free Software License B)."),
+            "Libraries: Clipper2 by Angus Johnson (Boost Software License), LibTessDotNet (SGI Free Software License B), SixLabors.Fonts (Apache License 2.0)."),
     };
 
     HelpWindow(string topicId)

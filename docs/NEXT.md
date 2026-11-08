@@ -1,7 +1,8 @@
 # Next
 
-Branch: `master` (git initialised, nothing committed; the whole project is untracked). Commit only when the owner asks.
-Active plan: [plans/csharp-app.md](plans/csharp-app.md). Done: crash log, colours, gap filling, desk plate, wine glass marker, Arrange menu, cup marker saddle. Next: website ([plans/website.md](plans/website.md)), Phase 2 (shared code, browser font reader). Build 0.2 after.
+Branch: `website-phase-2` (Phase 2 committed there, not pushed or merged; run `code-reviewer` before merging to `main`). Commit only when the owner asks.
+Active plan: [plans/website.md](plans/website.md). Phase 2 done: shared code in `src/NameTagGenerator.Core`, browser-safe font reader. Next: Phase 3 (Blazor site), including font upload. Build 0.2 after.
+Keep SixLabors.Fonts at 2.1.3 (owner's choice): 2.2.0 and 3.x stop Release builds without a licence key. Do not work around that check.
 
 Waiting for the owner:
 - Trying the Arrange menu by hand, especially the first click after switching to the app.
@@ -12,7 +13,7 @@ Hand tests still open: rotating the preview by mouse, Save dialogs, Add font fil
 UI check leftovers, low priority: toolbar wraps in a narrow window; open colour button is low contrast.
 
 Run and test:
-- Tests: `dotnet test tests/NameTagGenerator.Tests`
+- Tests: `dotnet test NameTagGenerator.slnx` (shared code in `tests/NameTagGenerator.Core.Tests`, Windows-only in `tests/NameTagGenerator.Tests`)
 - Publish: `dotnet publish src/NameTagGenerator -c Release -o dist` (close any running copy from `dist` first)
 - Output: `dist/3D name tag generator.exe`
 

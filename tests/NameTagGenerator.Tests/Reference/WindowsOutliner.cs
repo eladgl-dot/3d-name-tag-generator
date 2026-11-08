@@ -1,16 +1,14 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using Clipper2Lib;
 using NameTagGenerator.Geometry;
+using NameTagGenerator.Text;
 
-namespace NameTagGenerator.Text;
+namespace NameTagGenerator.Tests.Reference;
 
-/// <summary>Letter outlines of a name. <see cref="Connector"/> holds a hollow connector kept apart from the letters.</summary>
-public sealed record TextShape(Paths64 Letters, Paths64 Connector);
-
-/// <summary>Turns a name into outlines using Windows text layout, which orders Hebrew correctly.</summary>
-public static class TextOutliner
+/// <summary>The old Windows text drawing, kept only as the yardstick for the shared outliner.</summary>
+public static class WindowsOutliner
 {
     // Same meaning of "size" as the old app: 18 means letters about 18 mm tall.
     const double EmPerSize = 100.0 / 72.0;
@@ -20,7 +18,7 @@ public static class TextOutliner
     public static TextShape Build(string name, FontFamily family, bool bold, double sizeMm, string connector, bool hollow)
     {
         var typeface = new Typeface(family, FontStyles.Normal, bold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal);
-        var rtl = IsRightToLeft(name);
+        var rtl = TextOutliner.IsRightToLeft(name);
         var words = name.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
         var hasConnector = !string.IsNullOrWhiteSpace(connector);
 
@@ -47,16 +45,6 @@ public static class TextOutliner
         }
 
         return new TextShape(Poly.Union(letters), Poly.Union(joins));
-    }
-
-    public static bool IsRightToLeft(string text)
-    {
-        foreach (var c in text)
-        {
-            if (c is >= '֐' and <= 'ࣿ' or >= 'יִ' and <= '﷿' or >= 'ﹰ' and <= '﻿') return true;
-            if (char.IsLetter(c)) return false;
-        }
-        return false;
     }
 
     static void AddOutlines(System.Windows.Media.Geometry geometry, Paths64 target)

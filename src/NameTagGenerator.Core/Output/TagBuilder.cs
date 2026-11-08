@@ -1,8 +1,6 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using Microsoft.Win32;
 using NameTagGenerator.Geometry;
 using NameTagGenerator.Items;
 using NameTagGenerator.Text;
@@ -22,7 +20,11 @@ public sealed record BuildResult(IReadOnlyList<PlacedTag> Tags, ArrayResult Arra
 public sealed class TagBuilder
 {
     readonly ConcurrentDictionary<string, ItemModel> _models = new();
+    readonly Func<string, OutlineFont> _fonts;
     string _modelsKey = "";
+
+    /// <param name="fonts">Finds a font by name. Without one, only the built-in fonts are available.</param>
+    public TagBuilder(Func<string, OutlineFont>? fonts = null) => _fonts = fonts ?? BundledFonts.Get;
 
     public BuildResult Build(IReadOnlyList<string> names, IItemType item, ItemSettings settings, ArrangeSettings arrange, CancellationToken cancel)
     {
@@ -33,7 +35,7 @@ public sealed class TagBuilder
             _modelsKey = key;
         }
 
-        var family = FontCatalog.Resolve(settings.Font);
+        var family = _fonts(settings.Font);
         var models = new List<(string Name, ItemModel Model)>();
         foreach (var name in names)
         {
@@ -89,42 +91,5 @@ public static class Exporter
         var bad = Path.GetInvalidFileNameChars();
         var clean = new string(name.Select(c => bad.Contains(c) ? '_' : c).ToArray()).Trim();
         return clean.Length == 0 ? "tag" : clean;
-    }
-}
-
-/// <summary>Finds Bambu Studio and opens files in it. It never closes or changes a running copy itself.</summary>
-public static class BambuStudio
-{
-    const string ExeName = "bambu-studio.exe";
-
-    public static string? FindExe()
-    {
-        foreach (var root in new[] { Environment.SpecialFolder.ProgramFiles, Environment.SpecialFolder.ProgramFilesX86, Environment.SpecialFolder.LocalApplicationData })
-        {
-            var candidate = Path.Combine(Environment.GetFolderPath(root), "Bambu Studio", ExeName);
-            if (File.Exists(candidate)) return candidate;
-        }
-
-        foreach (var hive in new[] { Registry.LocalMachine, Registry.CurrentUser })
-        {
-            using var uninstall = hive.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
-            if (uninstall is null) continue;
-            foreach (var name in uninstall.GetSubKeyNames())
-            {
-                using var app = uninstall.OpenSubKey(name);
-                if (app?.GetValue("DisplayIcon") is string icon && icon.EndsWith(ExeName, StringComparison.OrdinalIgnoreCase) && File.Exists(icon))
-                    return icon;
-            }
-        }
-        return null;
-    }
-
-    public static bool IsRunning => Process.GetProcessesByName("bambu-studio").Length > 0;
-
-    public static void Open(string exe, string file)
-    {
-        var start = new ProcessStartInfo(exe) { UseShellExecute = false };
-        start.ArgumentList.Add(file);
-        Process.Start(start)?.Dispose();
     }
 }

@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using NameTagGenerator.Geometry;
 using NameTagGenerator.Items;
 using NameTagGenerator.Output;
@@ -13,7 +13,7 @@ public class SweepTests
 
     public static IEnumerable<object[]> Cases() =>
         from item in ItemRegistry.All
-        from font in FontCatalog.BuiltIn.Append("Arial")
+        from font in BundledFonts.Names
         from name in Names
         from hollow in new[] { false, true }
         select new object[] { item.Id, font, name, hollow };
@@ -24,7 +24,7 @@ public class SweepTests
     {
         var item = ItemRegistry.All.Single(i => i.Id == id);
         var s = ItemSettings.DefaultsFor(item);
-        var text = TextOutliner.Build(name, FontCatalog.Resolve(font), false, s[Keys.FontSize], "-", hollow);
+        var text = TextOutliner.Build(name, BundledFonts.Get(font), false, s[Keys.FontSize], "-", hollow);
 
         var model = item.Build(text, s);
 
@@ -79,7 +79,7 @@ public class SweepTests
         foreach (var item in ItemRegistry.All)
         {
             var s = ItemSettings.DefaultsFor(item);
-            var text = TextOutliner.Build("ליב", FontCatalog.Resolve("Gan CLM"), false, s[Keys.FontSize], "-", false);
+            var text = TextOutliner.Build("ליב", BundledFonts.Get("Gan CLM"), false, s[Keys.FontSize], "-", false);
             var model = item.Build(text, s);
             using (var f = File.Create(Path.Combine(folder, item.Id + ".stl")))
                 StlWriter.Write(f, new[] { (model.Base, 0.0, 0.0), (model.Letters, 0.0, 0.0) });

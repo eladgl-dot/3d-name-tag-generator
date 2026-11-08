@@ -29,13 +29,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Clipper2" Version="2.0.0" />
-    <PackageReference Include="LibTessDotNet" Version="1.1.15" />
+    <ProjectReference Include="..\NameTagGenerator.Core\NameTagGenerator.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="..\..\assets\logo.ico" Link="logo.ico" />
-    <EmbeddedResource Include="..\..\assets\fonts\*.ttf;..\..\assets\fonts\*.otf" LogicalName="font:%(Filename)%(Extension)" />
   </ItemGroup>
 
   <!-- Give the published EXE the app's real name. -->

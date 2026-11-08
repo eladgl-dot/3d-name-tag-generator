@@ -19,7 +19,7 @@ public sealed class MainViewModel : Observable
     const double PetgGramsPerCm3 = 1.27;
 
     readonly AppState _state = AppState.Load();
-    readonly TagBuilder _builder = new();
+    readonly TagBuilder _builder = new(FontCatalog.Resolve);
     readonly DispatcherTimer _rebuildTimer;
     readonly ObservableCollection<FontOption> _fonts = new();
     CancellationTokenSource? _rebuildCancel;

@@ -1,5 +1,5 @@
 using System.IO;
-using System.Reflection;
+using System.Windows;
 using System.Windows.Media;
 
 namespace NameTagGenerator.Text;
@@ -18,6 +18,7 @@ public static class FontCatalog
 
     static readonly object Gate = new();
     static readonly Dictionary<string, FontFamily> Private = new(StringComparer.OrdinalIgnoreCase);
+    static readonly Dictionary<string, OutlineFont> Outlines = new(StringComparer.OrdinalIgnoreCase);
     static readonly List<string> Added = new();
     static readonly Dictionary<string, string> BuiltInGroups = new(StringComparer.OrdinalIgnoreCase);
     static bool _loaded;
@@ -37,13 +38,50 @@ public static class FontCatalog
         }
     }
 
-    /// <summary>Finds a font by name. An unknown name falls back to the Windows default.</summary>
-    public static FontFamily Resolve(string name)
+    /// <summary>Finds a font by name. Windows only says which file holds it. An unknown name gets the built-in fallback.</summary>
+    public static OutlineFont Resolve(string name)
     {
         EnsureLoaded();
         lock (Gate)
-            if (Private.TryGetValue(name, out var family)) return family;
-        return new FontFamily(name);
+            if (Outlines.TryGetValue(name, out var cached)) return cached;
+
+        var font = LoadOutlines(WindowsFamily(name)) ?? BundledFonts.Fallback;
+        lock (Gate) Outlines[name] = font;
+        return font;
+    }
+
+    /// <summary>The Windows font object for a name, for showing the font in the app's own lists.</summary>
+    public static FontFamily WindowsFamily(string name)
+    {
+        EnsureLoaded();
+        lock (Gate) return Private.TryGetValue(name, out var family) ? family : new FontFamily(name);
+    }
+
+    static OutlineFont? LoadOutlines(FontFamily family)
+    {
+        try
+        {
+            if (FaceFile(family, FontWeights.Normal) is not { } regular) return null;
+            var bold = FaceFile(family, FontWeights.Bold);
+            var realBold = bold is { Simulated: false } && bold.Path != regular.Path ? bold.Path : null;
+            return OutlineFont.FromFiles(regular.Path, realBold, regular.Family);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or InvalidDataException or SixLabors.Fonts.InvalidFontFileException)
+        {
+            // A damaged or unusual font must not stop the app.
+            return null;
+        }
+    }
+
+    sealed record FontFace(string Path, string? Family, bool Simulated);
+
+    static FontFace? FaceFile(FontFamily family, FontWeight weight)
+    {
+        var typeface = new Typeface(family, FontStyles.Normal, weight, FontStretches.Normal);
+        if (!typeface.TryGetGlyphTypeface(out var glyphs) || !glyphs.FontUri.IsFile) return null;
+        var names = glyphs.Win32FamilyNames;
+        var familyName = names.Values.FirstOrDefault();
+        return new FontFace(glyphs.FontUri.LocalPath, familyName, (glyphs.StyleSimulations & StyleSimulations.BoldSimulation) != 0);
     }
 
     public static IReadOnlyList<FontOption> ListAll()
@@ -115,11 +153,10 @@ public static class FontCatalog
             _loaded = true;
             Directory.CreateDirectory(FontFolder);
 
-            var assembly = Assembly.GetExecutingAssembly();
-            foreach (var resource in assembly.GetManifestResourceNames().Where(n => n.StartsWith("font:")))
+            foreach (var resource in BundledFonts.ResourceNames)
             {
-                var file = Path.Combine(FontFolder, resource["font:".Length..]);
-                using (var stream = assembly.GetManifestResourceStream(resource)!)
+                var file = Path.Combine(FontFolder, resource[BundledFonts.ResourcePrefix.Length..]);
+                using (var stream = BundledFonts.OpenResource(resource))
                 {
                     if (!File.Exists(file) || new FileInfo(file).Length != stream.Length)
                     {
@@ -157,6 +194,7 @@ public static class FontCatalog
 
         var folder = new Uri(Path.GetDirectoryName(file) + Path.DirectorySeparatorChar);
         Private[name] = new FontFamily(folder, $"./{Path.GetFileName(file)}#{name}");
+        Outlines.Remove(name);
         if (added && !Added.Contains(name)) Added.Add(name);
         if (!added) BuiltInGroups[name] = GroupFor(glyphs);
         return name;
