@@ -1,0 +1,48 @@
+<section id="help" class="help" aria-label="How to print">
+    <div class="help-top">
+        <h2>How to print</h2>
+        <button type="button" class="help-close" aria-label="Close help" title="Close" @ref="_close" @onclick="Close">×</button>
+    </div>
+
+    <div>
+        <h3>In two colours</h3>
+        <ol>
+            <li>Click <b>Download 3MF</b>.</li>
+            <li>Double-click the file to open it in Bambu Studio.</li>
+            <li>Base and Letters come in as two parts of one object. Choose a filament for each.</li>
+            <li>Slice and print.</li>
+        </ol>
+    </div>
+
+    <div>
+        <h3>Good to know</h3>
+        <ul>
+            <li>An STL has no colours. Use 3MF to keep the two parts.</li>
+            <li>The colours on this page are for the preview only. The real ones are the filaments you pick.</li>
+            <li>The grams shown assume solid PETG, so they are an upper limit.</li>
+            <li>A cup marker appears upside down and mirrored, because it prints name side down with no supports. Do not flip it.</li>
+        </ul>
+    </div>
+
+    <div>
+        <h3>Your data</h3>
+        <p>Names, settings and uploaded fonts stay in this browser. Nothing is sent anywhere.</p>
+    </div>
+
+    <div class="credits">
+        <h3>Credits</h3>
+        <p>Fonts: Gan CLM (GNU GPL v2), Chewy (Apache 2.0), the others SIL Open Font License 1.1. <a href="https://github.com/eladgl-dot/3d-name-tag-generator/tree/main/assets/fonts/licences" target="_blank" rel="noopener">Full licence texts</a></p>
+        <p>Libraries: three.js (MIT), Clipper2 (Boost), LibTessDotNet (SGI Free Software License B), SixLabors.Fonts (Apache 2.0).</p>
+    </div>
+</section>
+
+@code {
+    [Parameter] public EventCallback Close { get; set; }
+
+    ElementReference _close;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await _close.FocusAsync();
+    }
+}

@@ -5,7 +5,6 @@ A free website on GitHub Pages that makes the same name tags as the app, so peop
 Built from the same C# code (Blazor WebAssembly). The EXE stays and shares that code.
 
 ## Questions (waiting for answers)
-None right now.
 
 ## Owner answers
 - 1A Web version from the same C# code (Blazor WebAssembly), on GitHub Pages; keep the EXE.
@@ -21,6 +20,10 @@ None right now.
 - 11A Include font upload on the website, as 7A says.
 - 12A Stay on SixLabors.Fonts 2.1.3: no licence key needed, but no new fixes from upstream.
 - 13A "How to print" opens a panel that slides in from the side, with the preview still visible.
+- 14A Help panel mockup approved (docs/mockups/2026-11-08-help-panel.html): it covers the settings on the left.
+- 15A Vowel points (niqqud): leave them. They appear only if someone types them.
+- 16A Start Phase 4, and stop for approval just before the push.
+- 17A Commit the help panel and the mixed-name fix now.
 
 ## What the website does (first version)
 - Same items: keychain, pencil top, bookmark, desk plate, cup marker, wine glass marker.
@@ -56,7 +59,7 @@ Changes the owner will notice: a letter the chosen font does not have now comes 
 - [x] Download 3MF and STL from the browser. Verify: downloaded 3MF passes the Bambu headless check. Result: all 6 items downloaded from the browser; Bambu headless: 2 parts each, no mesh repairs. Downloads hold every name, placed as arranged.
 - [x] Remember settings in the browser; Hebrew right-to-left everywhere. Verify: `rtl-check`, reload keeps settings. Result: Release build in headless Chrome: names, item, font, size, Arrange and colours all survive a reload; damaged saved data gives the defaults with no console error. `rtl-check` found nothing high. Fixed from it: Hebrew names isolated in the warning line; invisible direction marks removed from names. Still to look at in `ui-check`: mixed Hebrew and English lines in the names box, Hebrew points in the 3D letters.
 - [x] Upload your own font file; a damaged file shows a message and changes nothing. Verify: uploaded font draws a name, is still there after reload. Result: in headless Chrome the list entry opens the file picker; a bad file shows the message and changes nothing; Arial uploaded, drew the names, and was still chosen and listed after a reload. Stored in IndexedDB, 20 MB limit. A font with a built-in font's name is listed as "Name (yours)". There is no way to remove an uploaded font yet.
-- [ ] Short help panel: how to open the file in Bambu Studio, and library credits (Clipper2, LibTessDotNet, SixLabors.Fonts). Verify: read through.
+- [x] Short help panel: how to open the file in Bambu Studio, and library credits (Clipper2, LibTessDotNet, SixLabors.Fonts, three.js). Verify: read through. Result: built as the approved mockup. In headless Chrome: opens and closes by link, × and Esc; focus moves in and back; settings behind it can't be reached; preview doesn't move; fills the screen at phone width. `ui-check` passed the page and panel in light and dark, desktop and phone, and found one high bug, now fixed: mixed Hebrew and English names drew one language backwards (also in the EXE, shared code). Names box alignment is right for mixed lines.
 
 ### Phase 4: Publish
 - [ ] GitHub Actions: build and publish to GitHub Pages on every push to main. Verify: site live at https://eladgl-dot.github.io/3d-name-tag-generator/

@@ -9,6 +9,11 @@ const PLATE_Z = -0.2;
 let renderer, scene, camera, controls, baseMesh, letterMesh, plateMesh;
 let drawQueued = false;
 
+// Esc closes the help from anywhere on the page, unless it is closing the Arrange menu.
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !document.querySelector('[popover]:popover-open')) document.querySelector('.help-close')?.click();
+});
+
 function draw() {
   if (drawQueued) return;
   drawQueued = true;

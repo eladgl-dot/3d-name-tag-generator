@@ -13,11 +13,16 @@
             <h1>3D name tag generator</h1>
             <span class="ver">v@(Version)</span>
             <span class="grow"></span>
+            <button type="button" class="link @(_helpOpen ? "open" : null)" aria-expanded="@(_helpOpen ? "true" : "false")" aria-controls="help" @ref="_helpLink" @onclick="() => _helpOpen = !_helpOpen">How to print</button>
             <a class="link" href="https://github.com/eladgl-dot/3d-name-tag-generator" target="_blank" rel="noopener">GitHub</a>
         </header>
 
         <div class="layout">
-            <aside>
+            @if (_helpOpen)
+            {
+                <HelpPanel Close="CloseHelp" />
+            }
+            <aside inert="@_helpOpen">
                 <section>
                     <h2><label for="names" style="font:inherit;color:inherit">Names (one per line)</label></h2>
                     <textarea id="names" dir="auto" @ref="_namesBox" @bind="_state.NamesText" @bind:event="oninput" @bind:after="ScheduleRebuild" @onkeyup="CaretMoved" @onclick="CaretMoved"></textarea>
@@ -201,6 +206,8 @@
     ElementReference _canvasHost;
     ElementReference _fontList;
     InputFile _fontPicker = null!;
+    ElementReference _helpLink;
+    bool _helpOpen;
     IJSObjectReference? _preview;
     IJSObjectReference? _downloads;
     bool _noWebGl;
@@ -272,6 +279,12 @@
             StateHasChanged();
         }
         _downloads = module;
+    }
+
+    async Task CloseHelp()
+    {
+        _helpOpen = false;
+        await _helpLink.FocusAsync();
     }
 
     async Task FontChosen(ChangeEventArgs e)

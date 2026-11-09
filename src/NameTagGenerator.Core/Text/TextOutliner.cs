@@ -26,7 +26,7 @@ public static class TextOutliner
         var rendered = font.Create((float)emSize, bold);
         var simulateBold = bold && font.SimulatesBold;
         var rtl = IsRightToLeft(name);
-        var words = name.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+        var words = InDisplayOrder(name.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries), rtl);
         var hasConnector = !string.IsNullOrWhiteSpace(connector);
 
         var letters = new Paths64();
@@ -38,7 +38,8 @@ public static class TextOutliner
             var options = new TextOptions(rendered)
             {
                 Dpi = 72,
-                TextDirection = rtl ? TextDirection.RightToLeft : TextDirection.LeftToRight,
+                // Each piece follows its own letters. Forcing the name's direction would draw an English word backwards in a Hebrew name.
+                TextDirection = TextDirection.Auto,
                 HintingMode = HintingMode.None,
                 KerningMode = KerningMode.Standard,
                 FallbackFontFamilies = new[] { BundledFonts.Fallback.Family },
@@ -63,6 +64,30 @@ public static class TextOutliner
 
         var thicken = simulateBold ? emSize * SimulatedBoldPerSideEm : 0;
         return new TextShape(Finish(letters, thicken), Finish(joins, thicken));
+    }
+
+    /// <summary>
+    /// Words run in the name's direction, but neighbouring words in the other language keep their own reading order,
+    /// so they swap places, as in a text box. A number between two of them stays with them.
+    /// </summary>
+    static string[] InDisplayOrder(string[] words, bool rtl)
+    {
+        bool IsOtherLanguage(string word) => word.Any(char.IsLetter) && IsRightToLeft(word) != rtl;
+
+        var ordered = (string[])words.Clone();
+        for (var start = 0; start < words.Length; start++)
+        {
+            if (!IsOtherLanguage(words[start])) continue;
+            var end = start;
+            for (var next = start + 1; next < words.Length; next++)
+            {
+                if (IsOtherLanguage(words[next])) end = next;
+                else if (words[next].Any(char.IsLetter)) break;
+            }
+            Array.Reverse(ordered, start, end - start + 1);
+            start = end;
+        }
+        return ordered;
     }
 
     static Paths64 Finish(Paths64 outlines, double thickenMm)

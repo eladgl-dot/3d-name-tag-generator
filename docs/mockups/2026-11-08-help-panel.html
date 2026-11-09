@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help panel mockup</title>
+<style>
+:root {
+  --bg: #f3f4f6; --panel: #ffffff; --field: #f3f4f6; --line: #dfe2e7; --text: #1b1f27; --muted: #5d6573;
+  --accent: #0f6cbd; --accent-text: #ffffff; --viewport: #e8ebf0; --grid: #d3d8e0;
+  --base: #1e90ff; --base-dark: #1570c9; --letters: #ffffff;
+  --r: 8px; --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17191d; --panel: #212429; --field: #2b2f36; --line: #363b44; --text: #eceef2; --muted: #a2a9b6;
+    --accent: #4aa3ee; --accent-text: #08131f; --viewport: #15171b; --grid: #2a2e35;
+  }
+}
+* { box-sizing: border-box; }
+html { color-scheme: light dark; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 "Segoe UI", Tahoma, Arial, sans-serif; }
+.note { max-width: 1200px; margin: var(--s3) auto 0; padding: 0 var(--s4); color: var(--muted); font-size: 12px; }
+.page { max-width: 1200px; margin: var(--s3) auto var(--s5); padding: 0 var(--s4); }
+.frame { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+header { display: flex; align-items: center; gap: var(--s2); padding: var(--s2) var(--s4); border-bottom: 1px solid var(--line); }
+header svg { width: 24px; height: 24px; flex: none; }
+header strong { font-size: 16px; }
+header .ver { color: var(--muted); font-size: 12px; }
+header .grow { flex: 1; }
+.link { border: 0; background: none; color: var(--accent); font: inherit; cursor: pointer; padding: 4px 6px; text-decoration: none; }
+.link.open { font-weight: 600; }
+.layout { position: relative; display: grid; grid-template-columns: 360px 1fr; min-height: 640px; }
+.help { border-inline-end: 1px solid var(--line); padding: var(--s4); display: flex; flex-direction: column; gap: var(--s4); max-height: 640px; overflow-y: auto; box-shadow: 4px 0 16px rgb(0 0 0 / 0.12); }
+.help-top { display: flex; align-items: center; justify-content: space-between; }
+.help h2 { font-size: 16px; font-weight: 600; margin: 0; }
+.help h3 { font-size: 13px; font-weight: 600; margin: 0 0 var(--s1); }
+.help p, .help ol, .help ul { margin: 0; }
+.help ol, .help ul { padding-inline-start: 20px; }
+.help li + li { margin-top: var(--s1); }
+.small { font-size: 12px; color: var(--muted); }
+.close { width: 32px; height: 32px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel); color: var(--text); font: inherit; font-size: 16px; line-height: 1; cursor: pointer; }
+main { display: flex; flex-direction: column; min-width: 0; }
+.view { flex: 1; position: relative; min-height: 360px; background: var(--viewport);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 40px 40px; }
+.stage { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 56px var(--s4) 40px; }
+.stage svg { width: min(480px, 100%); height: auto; }
+.tip { position: absolute; inset-block-end: var(--s2); inset-inline-start: var(--s3); font-size: 12px; color: var(--muted); }
+.bar { display: flex; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); border-top: 1px solid var(--line); flex-wrap: wrap; }
+.primary { background: var(--accent); color: var(--accent-text); border: 0; border-radius: var(--r); padding: 8px 16px; font: inherit; font-weight: 600; cursor: pointer; }
+.secondary { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: var(--r); padding: 8px 14px; font: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.name { font: 700 34px "Segoe UI", Tahoma, Arial, sans-serif; fill: var(--letters); text-anchor: middle; direction: rtl; }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  .help { max-height: none; border-inline-end: 0; box-shadow: none; }
+  main { display: none; }
+}
+</style>
+</head>
+<body>
+<p class="note">Mockup, not working. The panel slides in over the settings on the left, so the preview stays visible. It closes with ×, Esc, or the link again. On a phone it fills the screen.</p>
+<div class="page">
+  <div class="frame">
+    <header>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="4" fill="var(--base)"/><circle cx="6.5" cy="12" r="1.6" fill="var(--panel)"/><rect x="10" y="10" width="9" height="4" rx="1" fill="#fff"/></svg>
+      <strong>3D name tag generator</strong>
+      <span class="ver">v0.2</span>
+      <span class="grow"></span>
+      <button class="link open" aria-expanded="true">How to print</button>
+      <a class="link" href="#">GitHub</a>
+    </header>
+    <div class="layout">
+      <section class="help" aria-label="How to print">
+        <div class="help-top">
+          <h2>How to print</h2>
+          <button class="close" aria-label="Close">×</button>
+        </div>
+        <div>
+          <h3>In two colours</h3>
+          <ol>
+            <li>Click <b>Download 3MF</b>.</li>
+            <li>Double-click the file to open it in Bambu Studio.</li>
+            <li>Base and Letters come in as two parts of one object. Choose a filament for each.</li>
+            <li>Slice and print.</li>
+          </ol>
+        </div>
+        <div>
+          <h3>Good to know</h3>
+          <ul>
+            <li>An STL has no colours. Use 3MF to keep the two parts.</li>
+            <li>The colours on this page are for the preview only. The real ones are the filaments you pick.</li>
+            <li>The grams shown assume solid PETG, so they are an upper limit.</li>
+            <li>A cup marker appears upside down and mirrored, because it prints name side down with no supports. Do not flip it.</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Your data</h3>
+          <p>Names, settings and uploaded fonts stay in this browser. Nothing is sent anywhere.</p>
+        </div>
+        <div class="small">
+          <h3>Credits</h3>
+          <p>Fonts: Gan CLM (GNU GPL v2), Chewy (Apache 2.0), the others SIL Open Font License 1.1. <a class="link" style="padding:0" href="#">Full licence texts</a></p>
+          <p style="margin-top:4px">Libraries: three.js (MIT), Clipper2 (Boost), LibTessDotNet (SGI Free Software License B), SixLabors.Fonts (Apache 2.0).</p>
+        </div>
+      </section>
+      <main>
+        <div class="view">
+          <div class="stage">
+            <svg viewBox="0 0 400 130" role="img" aria-label="Preview of a keychain">
+              <rect x="20" y="24" width="360" height="96" rx="26" fill="var(--base-dark)"/>
+              <rect x="20" y="14" width="360" height="96" rx="26" fill="var(--base)"/>
+              <circle cx="58" cy="62" r="13" fill="var(--viewport)"/>
+              <text class="name" x="222" y="76">נויה</text>
+            </svg>
+          </div>
+          <span class="tip">Drag to turn, scroll to zoom</span>
+        </div>
+        <div class="bar">
+          <button class="primary">Download 3MF</button>
+          <button class="secondary">Download STL</button>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+</body>
+</html>

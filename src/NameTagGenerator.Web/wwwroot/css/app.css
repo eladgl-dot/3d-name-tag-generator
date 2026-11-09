@@ -33,8 +33,9 @@ body { margin: 0; background: var(--bg); color: var(--text); font: var(--font-bo
 .top h1 { font-size: var(--font-title); font-weight: 700; margin: 0; }
 .ver { color: var(--muted); font-size: var(--font-label); }
 .grow { flex: 1; }
-.link { border: 0; background: none; color: var(--accent); font: inherit; cursor: pointer; padding: var(--s1) 6px; text-decoration: none; }
+.link { border: 0; background: none; color: var(--accent); font: inherit; cursor: pointer; padding: var(--s1) 6px; text-decoration: none; white-space: nowrap; }
 .link:hover { text-decoration: underline; }
+.link.open { font-weight: 600; }
 
 .layout { display: grid; grid-template-columns: 330px 1fr; min-height: 560px; }
 aside { padding: var(--s4); border-inline-end: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--s4); }
@@ -108,16 +109,39 @@ main { display: flex; flex-direction: column; min-width: 0; position: sticky; in
 .status { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); padding: var(--s2) var(--s4); border-top: 1px solid var(--line); font-size: var(--font-label); color: var(--muted); min-height: 34px; }
 .warning { color: var(--warning); font-weight: 600; }
 
+/* The help covers the settings column and stays in view like the preview, so the preview never moves. */
+aside, .help { grid-area: 1 / 1; }
+main { grid-area: 1 / 2; }
+.help {
+  position: sticky; inset-block-start: 0; align-self: start; z-index: 2; height: calc(100vh - var(--above-layout)); overflow-y: auto;
+  display: flex; flex-direction: column; gap: var(--s4); padding: var(--s4); line-height: 1.5;
+  background: var(--panel); border-inline-end: 1px solid var(--line); box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
+  animation: help-in 160ms ease-out;
+}
+@keyframes help-in { from { opacity: 0; transform: translateX(-16px); } }
+.help-top { display: flex; align-items: center; justify-content: space-between; }
+.help h2 { font-size: var(--font-title); color: var(--text); margin: 0; }
+.help h3 { font-size: 13px; font-weight: 600; margin: 0 0 var(--s1); }
+.help p, .help ol, .help ul { margin: 0; }
+.help ol, .help ul { padding-inline-start: 20px; }
+.help li + li, .help p + p { margin-block-start: var(--s1); }
+.help a { color: var(--accent); }
+.help-close { flex: none; width: 32px; height: 32px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: var(--r); font: inherit; font-size: var(--font-title); line-height: 1; cursor: pointer; }
+.help-close:hover { border-color: var(--accent); }
+.credits { font-size: var(--font-label); color: var(--muted); }
+
 #blazor-error-ui { display: none; position: fixed; inset-block-end: 0; inset-inline: 0; padding: var(--s2) var(--s4); background: var(--error); color: #fff; z-index: 10; }
 #blazor-error-ui a { color: inherit; margin-inline-start: var(--s3); }
 
 @media (max-width: 760px) {
   .layout { grid-template-columns: 1fr; }
   aside { border-inline-end: 0; border-block-start: 1px solid var(--line); }
+  aside, main { grid-area: auto; }
   main { order: -1; position: static; height: auto; align-self: stretch; }
   .view { min-height: 280px; flex: none; height: 320px; }
+  .help { position: fixed; inset: 0; z-index: 5; height: auto; align-self: stretch; border-inline-end: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; }
+  * { transition: none !important; animation: none !important; }
 }

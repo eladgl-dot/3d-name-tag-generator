@@ -1,7 +1,8 @@
 # Next
 
 Branch: `website-phase-2`, not pushed or merged. Commit only when the owner asks. `code-reviewer` before merging to `main`.
-Active plan: [plans/website.md](plans/website.md). Next step: Phase 3 help panel (add the "How to print" link from the mockup; credit three.js too). It slides in from the side (answer 13A); show a mockup first. Then `ui-check` (include mixed Hebrew and English lines in the names box, Hebrew points in 3D letters). Build 0.2 after.
+Active plan: [plans/website.md](plans/website.md). Phase 3 is done. Next: plan questions 1 (niqqud) and 2 (start Phase 4), then Phase 4. Build 0.2 after.
+Uncommitted, tested, not yet asked to commit: help panel (Web/Components/HelpPanel.razor, Home.razor, app.css, preview.js), mixed Hebrew and English fix (Core/Text/TextOutliner.cs, tests MixedDirectionTests.cs). The fix also changes the EXE; EXE not rebuilt.
 Website: `src/NameTagGenerator.Web` (Blazor). `preview.js` draws with three.js 0.170, copied into `wwwroot/lib/three`; OrbitControls.js has its import path edited. Before deploy: GitHub Pages needs `<base href>` set to the repo path.
 Keep SixLabors.Fonts at 2.1.3 (owner's choice): newer versions stop Release builds without a licence key. Do not work around that.
 
@@ -12,7 +13,7 @@ Waiting for the owner:
 Hand tests open: EXE preview rotation, Save dialogs, Add font file, a PC without .NET 10, 100% text size. Website: real graphics card, touch. Low priority: EXE toolbar wraps when narrow; open colour button low contrast.
 
 Run and test:
-- Tests: `dotnet test NameTagGenerator.slnx` (1384 pass). Site: `dotnet run --project src/NameTagGenerator.Web`, or publish Release (trimming only shows there).
+- Tests: `dotnet test NameTagGenerator.slnx` (1396 pass). Site: `dotnet run --project src/NameTagGenerator.Web`, or publish Release (trimming only shows there).
 - EXE: `dotnet publish src/NameTagGenerator -c Release -o dist` (close any running copy from `dist` first). Version comes from the csproj. v0.1.2 and v0.1.3 (dist/0.1.x) not released.
 
 Rules:
