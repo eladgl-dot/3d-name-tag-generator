@@ -1,0 +1,15 @@
+@using System.Globalization
+@using NameTagGenerator.Text
+
+@* Shows a printed outline. Purely a picture: the control around it names it. *@
+<svg viewBox="@Image.ViewBox" style="@Size" class="outline" preserveAspectRatio="@Align" aria-hidden="true" focusable="false">
+    <path d="@Image.Path" fill="currentColor" fill-rule="evenodd" />
+</svg>
+
+@code {
+    [Parameter, EditorRequired] public OutlineImage Image { get; set; } = null!;
+    [Parameter] public double HeightPx { get; set; } = 24;
+    [Parameter] public string Align { get; set; } = "xMidYMid meet";
+
+    string Size => string.Create(CultureInfo.InvariantCulture, $"height:{HeightPx:0.#}px;width:{HeightPx * Image.Width / Image.Height:0.#}px");
+}

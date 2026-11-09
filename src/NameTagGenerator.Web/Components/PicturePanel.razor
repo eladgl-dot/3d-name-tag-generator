@@ -1,0 +1,81 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using NameTagGenerator.Pictures
+
+<section>
+    <h2>Picture</h2>
+    <InputFile id="picture-file" hidden accept=".svg,.png,.jpg,.jpeg,.webp" OnChange="FileChosen" />
+    @if (Choice.FileName is null)
+    {
+        <button type="button" class="secondary small" onclick="@OpenPicker">Choose a picture…</button>
+        <p class="hint">SVG, PNG or JPG. It goes beside every name.</p>
+    }
+    else
+    {
+        <div class="picture-row">
+            <div class="thumb">
+                @if (Image is not null)
+                {
+                    <OutlineSvg Image="Image" HeightPx="52" />
+                }
+            </div>
+            <div class="picture-file">
+                <div class="picture-name" dir="auto" title="@Choice.FileName">@Choice.FileName</div>
+                <div class="picture-buttons">
+                    <button type="button" class="secondary small" onclick="@OpenPicker">Change…</button>
+                    <button type="button" class="secondary small" @onclick="Remove">Remove</button>
+                </div>
+            </div>
+        </div>
+        <div class="grid picture-grid">
+            <div class="full">
+                <div class="field-label">Place</div>
+                <div class="chips">
+                    <button type="button" class="chip @(Choice.PlaceRight ? null : "on")" aria-pressed="@(Choice.PlaceRight ? "false" : "true")" @onclick="() => Place(false)">Left of name</button>
+                    <button type="button" class="chip @(Choice.PlaceRight ? "on" : null)" aria-pressed="@(Choice.PlaceRight ? "true" : "false")" @onclick="() => Place(true)">Right of name</button>
+                </div>
+            </div>
+            <NumberField Label="Height (mm)" Min="5" Value="@Choice.HeightMm" ValueChanged="SetHeight" />
+            <NumberField Label="Gap (mm)" Value="@Choice.GapMm" ValueChanged="SetGap" />
+            @if (!IsDrawing)
+            {
+                <label class="full">
+                    Black and white level
+                    <input type="range" class="level" min="1" max="99" @bind="Choice.LevelPercent" @bind:event="oninput" @bind:after="Changed.InvokeAsync" />
+                </label>
+                <div class="full"><Toggle Label="Swap dark and light" @bind-Value="Choice.Swap" @bind-Value:after="Changed.InvokeAsync" /></div>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    // Straight from the click, because some browsers refuse a file picker after any delay.
+    const string OpenPicker = "const file = document.getElementById('picture-file'); file.value = ''; file.click();";
+
+    [Parameter, EditorRequired] public PictureChoice Choice { get; set; } = null!;
+    [Parameter] public OutlineImage? Image { get; set; }
+    [Parameter] public bool IsDrawing { get; set; }
+    [Parameter] public EventCallback Changed { get; set; }
+    [Parameter] public EventCallback Remove { get; set; }
+    [Parameter] public EventCallback<InputFileChangeEventArgs> FileChosen { get; set; }
+
+    Task Place(bool right)
+    {
+        Choice.PlaceRight = right;
+        return Changed.InvokeAsync();
+    }
+
+    Task SetHeight(double mm)
+    {
+        Choice.HeightMm = mm;
+        Choice.Repair();
+        return Changed.InvokeAsync();
+    }
+
+    Task SetGap(double mm)
+    {
+        Choice.GapMm = mm;
+        Choice.Repair();
+        return Changed.InvokeAsync();
+    }
+}

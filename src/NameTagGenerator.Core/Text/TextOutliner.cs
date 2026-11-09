@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using System.Text;
 using Clipper2Lib;
 using NameTagGenerator.Geometry;
 using SixLabors.Fonts;
@@ -42,7 +43,7 @@ public static class TextOutliner
                 TextDirection = TextDirection.Auto,
                 HintingMode = HintingMode.None,
                 KerningMode = KerningMode.Standard,
-                FallbackFontFamilies = new[] { BundledFonts.Fallback.Family },
+                FallbackFontFamilies = new[] { BundledFonts.Fallback.Family, BundledFonts.Emoji.Family },
             };
             var letterWidening = simulateBold ? emSize * SimulatedBoldWideningEm : 0;
             var advance = TextMeasurer.MeasureAdvance(token, options).Width + letterWidening * new StringInfo(token).LengthInTextElements;
@@ -96,6 +97,22 @@ public static class TextOutliner
         return thickenMm > 0 ? Poly.Inflate(joined, thickenMm) : joined;
     }
 
+    /// <summary>The visible characters that neither the font, the fallback font nor the emoji font can draw.</summary>
+    public static IReadOnlyList<string> CharactersNotDrawn(string text, OutlineFont font) =>
+        text.EnumerateRunes()
+            .Where(r => IsVisible(r) && !font.Has(r.Value) && !BundledFonts.Fallback.Has(r.Value) && !BundledFonts.Emoji.Has(r.Value))
+            .Select(r => r.ToString())
+            .Distinct()
+            .ToList();
+
+    /// <summary>False when a letter would have to come from the fallback font, so the text would not show this font.</summary>
+    public static bool DrawsOwnLetters(string text, OutlineFont font) =>
+        text.EnumerateRunes().All(r => !Rune.IsLetter(r) || font.Has(r.Value));
+
+    static bool IsVisible(Rune r) => Rune.GetUnicodeCategory(r) is not
+        (UnicodeCategory.Control or UnicodeCategory.Format or UnicodeCategory.NonSpacingMark or UnicodeCategory.EnclosingMark
+        or UnicodeCategory.SpaceSeparator or UnicodeCategory.LineSeparator or UnicodeCategory.ParagraphSeparator);
+
     public static bool IsRightToLeft(string text)
     {
         foreach (var c in text)
@@ -127,10 +144,15 @@ public static class TextOutliner
         {
             var result = new Paths64();
             var place = 0;
-            foreach (var letter in _letters.Where(l => l.Count > 0).OrderBy(l => l.Min(p => p.Min(v => v.X))))
+            // In the order they were laid out, not sorted by position: slanted handwriting has letters that overlap sideways.
+            var letters = _letters.Where(l => l.Count > 0).ToList();
+            if (letters.Count > 1 && Centre(letters[0]) > Centre(letters[^1])) letters.Reverse();
+            foreach (var letter in letters)
                 result.AddRange(Clipper.TranslatePaths(letter, Poly.U(widening * place++), 0));
             return result;
         }
+
+        static double Centre(Paths64 letter) => (letter.Min(p => p.Min(v => v.X)) + (double)letter.Max(p => p.Max(v => v.X))) / 2;
 
         public void MoveTo(Vector2 point)
         {

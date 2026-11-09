@@ -112,7 +112,7 @@ public class TextTests
     {
         Assert.Equal(new[]
         {
-            "Alef", "Assistant", "Bebas Neue", "Chewy", "Comfortaa", "Fredoka", "Gan CLM", "Heebo", "Lobster",
+            "Alef", "Assistant", "Bebas Neue", "Chewy", "Comfortaa", "Fredoka", "Gan CLM", "Gveret Levin", "Heebo", "Lobster",
             "MigdalHaemeq", "Noot", "Pacifico", "Righteous", "Rubik", "Secular One", "Suez One", "Varela Round",
         }, BundledFonts.Names.OrderBy(n => n));
     }

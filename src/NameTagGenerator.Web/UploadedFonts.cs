@@ -46,5 +46,5 @@ public sealed class UploadedFonts(IJSRuntime js)
         }
     }
 
-    ValueTask<IJSObjectReference> OpenStore() => js.InvokeAsync<IJSObjectReference>("import", "./js/fonts.js");
+    ValueTask<IJSObjectReference> OpenStore() => js.InvokeAsync<IJSObjectReference>("import", "./js/storage.js");
 }

@@ -17,3 +17,8 @@ In progress: Phase 3 remaining steps (remember settings, font upload, help). Not
 ## 2026-11-08 (website: settings and font upload)
 Done: first website commit; settings remembered in the browser; font upload kept in IndexedDB; direction marks removed from names. 1384 tests pass, headless Chrome checks pass on the Release build.
 In progress: help panel, waiting on plan question 1. Settings and font upload not committed yet.
+
+## 2026-11-09
+Done: help panel, mixed Hebrew and English fix, publish workflow, three review fixes, website live on GitHub Pages (766693c).
+Checked: 1396 tests; live site in headless Chrome and Edge, desktop and phone width.
+Next: build 0.2 of the EXE; try the site on a real phone.

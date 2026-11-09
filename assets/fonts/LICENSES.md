@@ -1,6 +1,6 @@
 # Bundled fonts
 
-These font files are included unchanged inside the app and the website. The full licence text for each is in [licences](licences/).
+These font files are included inside the app and the website, unchanged except where noted below. The full licence text for each is in [licences](licences/).
 
 | Font | File | Letters | Copyright | Licence | Licence text |
 |---|---|---|---|---|---|
@@ -11,6 +11,7 @@ These font files are included unchanged inside the app and the website. The full
 | Comfortaa | `Comfortaa-Regular.ttf` | English | © 2011 The Comfortaa Project Authors | SIL OFL 1.1 | [Comfortaa-OFL.txt](licences/Comfortaa-OFL.txt) |
 | Fredoka | `Fredoka-Regular.ttf` | Hebrew, English | © 2016 The Fredoka Project Authors | SIL OFL 1.1 | [Fredoka-OFL.txt](licences/Fredoka-OFL.txt) |
 | Gan CLM | `ganclm_bold-webfont.ttf` | Hebrew | © 2004 Maxim Iorsh | GNU GPL version 2 | [GanCLM-GPL-2.0.txt](licences/GanCLM-GPL-2.0.txt) |
+| Gveret Levin | `GveretLevin-Regular.ttf` | Hebrew, English | © 2024 The Gveret Levin Project Authors | SIL OFL 1.1 | [GveretLevin-OFL.txt](licences/GveretLevin-OFL.txt) |
 | Heebo | `Heebo-Regular.ttf` | Hebrew, English | © 2014 The Heebo Project Authors | SIL OFL 1.1 | [Heebo-OFL.txt](licences/Heebo-OFL.txt) |
 | Lobster | `Lobster-Regular.ttf` | English | © 2010 The Lobster Project Authors | SIL OFL 1.1 | [Lobster-OFL.txt](licences/Lobster-OFL.txt) |
 | MigdalHaemeq | `migdalfontwin-webfont.ttf` | Hebrew | © 2010 Elad Mizrahi | SIL OFL 1.1 | [MigdalHaemeq-OFL.txt](licences/MigdalHaemeq-OFL.txt) |
@@ -21,6 +22,8 @@ These font files are included unchanged inside the app and the website. The full
 | Secular One | `SecularOne-Regular.ttf` | Hebrew, English | © 2016 The Secular One Project Authors | SIL OFL 1.1 | [SecularOne-OFL.txt](licences/SecularOne-OFL.txt) |
 | Suez One | `SuezOne-Regular.ttf` | Hebrew, English | © 2016 Michal Sahar | SIL OFL 1.1 | [SuezOne-OFL.txt](licences/SuezOne-OFL.txt) |
 | Varela Round | `VarelaRound-Regular.ttf` | Hebrew, English | © 2023 The Varela Round Project Authors | SIL OFL 1.1 | [VarelaRound-OFL.txt](licences/VarelaRound-OFL.txt) |
+| Noto Emoji | `../emoji/NotoEmoji-Bold.ttf` | Emoji | © 2013 Google LLC | SIL OFL 1.1 | [NotoEmoji-OFL.txt](licences/NotoEmoji-OFL.txt) |
 
 The Google Fonts files were downloaded from fonts.google.com on 2026-11-08; their licence texts come from github.com/google/fonts.
+Gveret Levin and Noto Emoji were downloaded from github.com/google/fonts on 2026-11-09. Noto Emoji is changed in one way: its adjustable weight is fixed at bold (700) with fontTools, so its lines are thick enough to print.
 Frank Ruhl Libre was tried and left out: about a fifth of its letters is thinner than 0.8 mm at 12 mm, too thin to print well.

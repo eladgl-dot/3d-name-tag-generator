@@ -1,8 +1,8 @@
 # Next
 
-Branch: `website-phase-2`, not pushed or merged. Commit only when the owner asks. `code-reviewer` before merging to `main`.
-Active plan: [plans/website.md](plans/website.md). Phase 4: workflow written, `code-reviewer` done. Waiting for plan question 1 (go live). Then: commit, enable Pages with source GitHub Actions (`gh` is at `C:\Program Files\GitHub CLI\gh.exe`), push, merge to `main`, check the live site with `ui-check`. Build 0.2 after; the EXE has the mixed-name fix but is not rebuilt.
-Uncommitted, tested, not yet asked to commit: `.github/workflows/pages.yml`, review fixes (Home.razor, UploadedFonts.cs, fonts.js), plan and this file.
+Branch: `website-phase-2`, same as `main` at 766693c, both pushed. Only plan and notes files changed since. Commit only when the owner asks. `code-reviewer` before merging to `main`.
+Website is LIVE: https://eladgl-dot.github.io/3d-name-tag-generator/ Every push to `main` republishes it.
+Active plan: [plans/website.md](plans/website.md). All phases done. Low items left are listed in the plan's Phase 4. Active now: [plans/emoji-picture-fonts.md](plans/emoji-picture-fonts.md), waiting for its 4 questions; nothing built yet. Candidate fonts are not in the repo yet: get Gveret Levin and Noto Emoji from github.com/google/fonts (ofl/). The EXE has the mixed-name fix but is not rebuilt. `gh` is at `C:\Program Files\GitHub CLI\gh.exe`, not on the PATH.
 Website: `src/NameTagGenerator.Web` (Blazor). `preview.js` draws with three.js 0.170, copied into `wwwroot/lib/three`; OrbitControls.js has its import path edited. The workflow sets `<base href>` to the repo path at publish time.
 Keep SixLabors.Fonts at 2.1.3 (owner's choice): newer versions stop Release builds without a licence key. Do not work around that.
 
@@ -10,7 +10,7 @@ Waiting for the owner:
 - Try the Arrange menu by hand, especially the first click after switching to the app.
 - Real prints of desk plate, wine glass marker, revised bookmark. Cup marker prints well but fits too loose: try a smaller Rim thickness.
 - `crash.log` in `%LOCALAPPDATA%\3D name tag generator` if the memory error returns.
-Hand tests open: EXE preview rotation, Save dialogs, Add font file, a PC without .NET 10, 100% text size. Website: real graphics card, touch. Low priority: EXE toolbar wraps when narrow; open colour button low contrast.
+Hand tests open: EXE preview rotation, Save dialogs, Add font file, a PC without .NET 10, 100% text size. Website: real phone, touch, real graphics card, Safari or iPhone (font upload picker may not open there). Low priority: EXE toolbar wraps when narrow; open colour button low contrast.
 
 Run and test:
 - Tests: `dotnet test NameTagGenerator.slnx` (1396 pass). Site: `dotnet run --project src/NameTagGenerator.Web`, or publish Release (trimming only shows there).

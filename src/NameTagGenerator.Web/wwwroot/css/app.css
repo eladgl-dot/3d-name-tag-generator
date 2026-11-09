@@ -109,6 +109,56 @@ main { display: flex; flex-direction: column; min-width: 0; position: sticky; in
 .status { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); padding: var(--s2) var(--s4); border-top: 1px solid var(--line); font-size: var(--font-label); color: var(--muted); min-height: 34px; }
 .warning { color: var(--warning); font-weight: 600; }
 
+.names-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s2); margin-bottom: var(--s1); }
+.names-head h2 { margin: 0; }
+#names { anchor-name: --names; }
+/* Opens under the names box, so the name being edited stays in view. */
+.emoji-menu {
+  position-anchor: --names; position-area: bottom span-right; position-try-fallbacks: flip-block; margin: var(--s1) 0;
+  width: anchor-size(width, 297px); padding: var(--s2);
+  display: none; grid-template-columns: repeat(8, 1fr); gap: 2px;
+}
+.emoji-menu:popover-open { display: grid; }
+@supports not (position-area: bottom) { .emoji-menu { margin: auto; } }
+.emoji { display: flex; align-items: center; justify-content: center; height: 40px; background: none; border: 0; border-radius: var(--r-small); color: var(--text); cursor: pointer; }
+.emoji:hover { background: var(--field); }
+
+.outline { display: block; flex: 0 1 auto; min-width: 0; max-width: 100%; }
+.font-button {
+  anchor-name: --font; display: flex; align-items: center; justify-content: space-between; gap: var(--s2);
+  width: 100%; min-height: 36px; margin-top: 2px; padding: 6px var(--s2); font: inherit; font-size: var(--font-body); cursor: pointer;
+  background: var(--field); color: var(--text); border: 1px solid var(--line); border-radius: var(--r-small);
+}
+.font-button:hover { border-color: var(--accent); }
+.font-arrow { flex: none; color: var(--muted); }
+.font-list {
+  /* Opens on whichever side has more room, and never taller than that room, so the last row can be reached. */
+  position-anchor: --font; position-area: bottom span-right; position-try-fallbacks: flip-block; position-try-order: most-height; margin: var(--s1) 0;
+  width: anchor-size(width, 298px); max-height: min(430px, calc(100% - var(--s2))); overflow-y: auto; padding: 0 0 var(--s1); color: var(--text);
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
+}
+@supports not (position-area: bottom) { .font-list { margin: auto; width: min(320px, 90vw); max-height: min(430px, 70vh); } }
+.font-group { padding: var(--s2) var(--s3) var(--s1); font-size: var(--font-label); font-weight: 600; color: var(--muted); }
+.font-row {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3); width: 100%; min-height: 40px; padding: var(--s1) var(--s3);
+  background: none; border: 0; color: var(--text); font: inherit; text-align: start; cursor: pointer;
+}
+.font-row:hover { background: var(--field); }
+.font-row:focus-visible { outline-offset: -2px; }
+.font-row.on { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.font-name { flex: 0 1 auto; min-width: 0; max-width: 55%; overflow: hidden; text-overflow: ellipsis; font-size: var(--font-label); color: var(--muted); white-space: nowrap; }
+.font-row.on .font-name { color: var(--accent); font-weight: 600; }
+.font-upload { color: var(--accent); font-size: 13px; border-top: 1px solid var(--line); margin-top: var(--s1); }
+
+.picture-row { display: flex; align-items: center; gap: var(--s3); }
+.thumb { flex: none; display: flex; align-items: center; justify-content: center; width: 64px; height: 64px; padding: var(--s1); color: var(--base); background: var(--viewport); border: 1px solid var(--line); border-radius: var(--r-small); overflow: hidden; }
+.picture-file { flex: 1; min-width: 0; }
+.picture-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picture-buttons { display: flex; gap: var(--s1); margin-top: var(--s1); }
+.picture-grid { margin-top: var(--s3); }
+.field-label { font-size: var(--font-label); color: var(--muted); margin-bottom: 2px; }
+.level { display: block; width: 100%; margin: var(--s1) 0 0; accent-color: var(--accent); }
+
 /* The help covers the settings column and stays in view like the preview, so the preview never moves. */
 aside, .help { grid-area: 1 / 1; }
 main { grid-area: 1 / 2; }
@@ -134,7 +184,8 @@ main { grid-area: 1 / 2; }
 #blazor-error-ui a { color: inherit; margin-inline-start: var(--s3); }
 
 @media (max-width: 760px) {
-  .layout { grid-template-columns: 1fr; }
+  /* minmax(0, ...): a very long file name must not stretch the column past the screen. */
+  .layout { grid-template-columns: minmax(0, 1fr); }
   aside { border-inline-end: 0; border-block-start: 1px solid var(--line); }
   aside, main { grid-area: auto; }
   main { order: -1; position: static; height: auto; align-self: stretch; }

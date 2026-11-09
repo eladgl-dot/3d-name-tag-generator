@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NameTagGenerator.Pictures;
 
 namespace NameTagGenerator.Items;
 
@@ -14,6 +15,7 @@ public sealed class SiteState
     public ArrangeSettings Arrange { get; set; } = new();
     public string BaseColour { get; set; } = DefaultBaseColour;
     public string LetterColour { get; set; } = DefaultLetterColour;
+    public PictureChoice Picture { get; set; } = new();
 
     [JsonIgnore]
     public List<string> Names => NamesText
@@ -71,6 +73,8 @@ public sealed class SiteState
         NamesText ??= defaults.NamesText;
         Items ??= new Dictionary<string, ItemSettings>();
         Arrange ??= new ArrangeSettings();
+        Picture ??= new PictureChoice();
+        Picture.Repair();
         if (!IsColour(BaseColour)) BaseColour = DefaultBaseColour;
         if (!IsColour(LetterColour)) LetterColour = DefaultLetterColour;
 

@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\..\assets\fonts\*.ttf;..\..\assets\fonts\*.otf" LogicalName="font:%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\assets\emoji\NotoEmoji-Bold.ttf" LogicalName="emoji:NotoEmoji-Bold.ttf" />
   </ItemGroup>
 
 </Project>

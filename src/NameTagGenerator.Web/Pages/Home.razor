@@ -3,6 +3,8 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inject IJSRuntime JS
 @inject UploadedFonts Fonts
+@inject SavedPicture Pictures
+@using NameTagGenerator.Pictures
 
 <PageTitle>3D name tag generator</PageTitle>
 
@@ -24,7 +26,18 @@
             }
             <aside inert="@_helpOpen">
                 <section>
-                    <h2><label for="names" style="font:inherit;color:inherit">Names (one per line)</label></h2>
+                    <div class="names-head">
+                        <h2><label for="names" style="font:inherit;color:inherit">Names (one per line)</label></h2>
+                        <button type="button" class="secondary small emoji-button" popovertarget="emoji-menu" @onclick="LoadEmojiImages">☺ Emoji</button>
+                    </div>
+                    <div id="emoji-menu" class="menu emoji-menu" popover>
+                        @foreach (var (emoji, name, image) in _emojiImages)
+                        {
+                            <button type="button" class="emoji" title="@name" aria-label="@name" popovertarget="emoji-menu" popovertargetaction="hide" @onclick="() => AddEmoji(emoji)">
+                                <OutlineSvg Image="image" HeightPx="22" />
+                            </button>
+                        }
+                    </div>
                     <textarea id="names" dir="auto" @ref="_namesBox" @bind="_state.NamesText" @bind:event="oninput" @bind:after="ScheduleRebuild" @onkeyup="CaretMoved" @onclick="CaretMoved"></textarea>
                     <p class="hint">@NameCount. Hebrew and English both work. Click a name to preview it.</p>
                 </section>
@@ -42,28 +55,11 @@
                 <section>
                     <h2>Letters</h2>
                     <div class="grid">
-                        <label class="full">
-                            Font
-                            <select @ref="_fontList" value="@Settings.Font" @onchange="FontChosen">
-                                @foreach (var group in FontGroups)
-                                {
-                                    <optgroup label="@group.Label">
-                                        @foreach (var font in group.Fonts)
-                                        {
-                                            <option value="@font">@font</option>
-                                        }
-                                    </optgroup>
-                                }
-                                <optgroup label="Your own">
-                                    @foreach (var font in Fonts.Library.AddedNames)
-                                    {
-                                        <option value="@font">@font</option>
-                                    }
-                                    <option value="@UploadChoice">Upload a font file…</option>
-                                </optgroup>
-                            </select>
-                        </label>
-                        <InputFile @ref="_fontPicker" hidden accept=".ttf,.otf" OnChange="FontFileChosen" />
+                        <div class="full">
+                            <label for="font-button">Font</label>
+                            <FontPicker Value="@Settings.Font" ValueChanged="FontChosen" Text="@SampleName" Bold="Settings.Bold" Connector="@Settings.Connector" Library="Fonts.Library" Groups="FontGroups" />
+                        </div>
+                        <InputFile id="font-file" hidden accept=".ttf,.otf" OnChange="FontFileChosen" />
                         <div class="full"><Toggle Label="Bold" @bind-Value="Settings.Bold" @bind-Value:after="ScheduleRebuild" /></div>
                         @foreach (var field in ItemRegistry.CommonFields)
                         {
@@ -87,6 +83,8 @@
                         }
                     </div>
                 </section>
+
+                <PicturePanel Choice="_state.Picture" Image="_pictureImage" IsDrawing="@(_pictureSource?.IsDrawing ?? true)" Changed="ScheduleRebuild" Remove="RemovePicture" FileChosen="PictureFileChosen" />
 
                 @if (_state.Item.Fields.Count > 0)
                 {
@@ -181,8 +179,10 @@
 @code {
     const double PetgGramsPerCm3 = 1.27;
     const string SavedSettingsKey = "nametag.settings";
-    const string UploadChoice = "\u0001upload";
     const long MaxFontBytes = 20 * 1024 * 1024;
+    const long MaxPictureBytes = 10 * 1024 * 1024;
+    // Below this, the missing bits are specks nobody would miss.
+    const double ThinShareWorthMentioning = 0.03;
 
     static readonly string Version = typeof(App).Assembly.GetName().Version?.ToString(2) ?? "";
 
@@ -205,9 +205,12 @@
 
     ElementReference _namesBox;
     ElementReference _canvasHost;
-    ElementReference _fontList;
-    InputFile _fontPicker = null!;
     ElementReference _helpLink;
+    IReadOnlyList<(string Emoji, string Name, OutlineImage Image)> _emojiImages = Array.Empty<(string, string, OutlineImage)>();
+    PictureSource? _pictureSource;
+    int _pictureNumber;
+    NamePicture? _picture;
+    OutlineImage? _pictureImage;
     bool _helpOpen;
     IJSObjectReference? _preview;
     IJSObjectReference? _downloads;
@@ -224,20 +227,26 @@
     {
         string Group(string name)
         {
+            if (BundledFonts.IsHandwriting(name)) return "Handwriting";
             var font = BundledFonts.All[name];
             return font.HasHebrew && font.HasEnglish ? "Hebrew and English" : font.HasHebrew ? "Hebrew" : "English only";
         }
-        return new[] { "Hebrew and English", "Hebrew", "English only" }
+        return new[] { "Handwriting", "Hebrew and English", "Hebrew", "English only" }
             .Select(label => (label, BundledFonts.Names.Where(n => Group(n) == label).ToList()))
             .Where(g => g.Item2.Count > 0)
             .ToArray();
     }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
         _builder = new TagBuilder(Fonts.Library.Get);
         LoadSettings();
-        return ScheduleRebuild();
+        if (_state.Picture.FileName is { } fileName)
+        {
+            _pictureSource = await Pictures.LoadAsync(fileName);
+            if (_pictureSource is null) _state.Picture.FileName = null;
+        }
+        await ScheduleRebuild();
     }
 
     void LoadSettings()
@@ -288,15 +297,27 @@
         await _helpLink.FocusAsync();
     }
 
-    async Task FontChosen(ChangeEventArgs e)
+    Task FontChosen(string font)
     {
-        var chosen = e.Value?.ToString() ?? "";
-        if (chosen == UploadChoice)
-        {
-            if (_downloads is not null) await _downloads.InvokeVoidAsync("pickFile", _fontList, Settings.Font, _fontPicker.Element);
-            return;
-        }
-        Settings.Font = chosen;
+        Settings.Font = font;
+        return ScheduleRebuild();
+    }
+
+    /// <summary>The name the font list shows: the one being previewed, or the first in the box.</summary>
+    string SampleName => _state.Names.Contains(_selectedName) ? _selectedName : _state.Names.FirstOrDefault() ?? "Noa";
+
+    void LoadEmojiImages()
+    {
+        if (_emojiImages.Count > 0) return;
+        _emojiImages = EmojiChoices.All
+            .Select(c => (c.Emoji, c.Name, OutlinePreview.Text(c.Emoji, BundledFonts.Emoji, false, "")!))
+            .ToList();
+    }
+
+    async Task AddEmoji(string emoji)
+    {
+        var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/picker.js");
+        _state.NamesText = await module.InvokeAsync<string>("insertAtCaret", _namesBox, emoji);
         await ScheduleRebuild();
     }
 
@@ -335,6 +356,75 @@
         _rebuild?.Cancel();
         await Rebuild(CancellationToken.None);
         if (!kept) _warning = "Font added, but this browser won't keep it after you leave the page.";
+    }
+
+    async Task PictureFileChosen(InputFileChangeEventArgs e)
+    {
+        if (e.File.Size > MaxPictureBytes)
+        {
+            _warning = "This picture is over 10 MB. Nothing was changed.";
+            return;
+        }
+
+        byte[] file;
+        try
+        {
+            using var read = e.File.OpenReadStream(MaxPictureBytes);
+            using var copy = new MemoryStream();
+            await read.CopyToAsync(copy);
+            file = copy.ToArray();
+        }
+        catch (Exception ex) when (ex is IOException or JSException)
+        {
+            _warning = "This file could not be read. Nothing was changed.";
+            return;
+        }
+
+        var source = await Pictures.ReadAsync(e.File.Name, file);
+        if (source is null)
+        {
+            _warning = "This file could not be read as a picture, or has nothing to print. Nothing was changed.";
+            return;
+        }
+
+        var kept = await Pictures.SaveAsync(file);
+        // Otherwise the older picture would come back under this file's name after a reload.
+        if (!kept) await Pictures.RemoveAsync();
+        _pictureSource = source;
+        _pictureNumber++;
+        _state.Picture.FileName = e.File.Name;
+        _rebuild?.Cancel();
+        await Rebuild(CancellationToken.None);
+        if (!kept) _warning = "Picture added, but this browser won't keep it after you leave the page.";
+    }
+
+    async Task RemovePicture()
+    {
+        _pictureSource = null;
+        _state.Picture.FileName = null;
+        await Pictures.RemoveAsync();
+        _rebuild?.Cancel();
+        await Rebuild(CancellationToken.None);
+    }
+
+    /// <summary>Traces and sizes the picture only when something about it has changed, so typing names stays quick.</summary>
+    void FitPicture()
+    {
+        if (_pictureSource is null)
+        {
+            // Without the picture the tag is smaller, so the view has to fit it again.
+            if (_picture is not null) _fitView = true;
+            _picture = null;
+            _pictureImage = null;
+            return;
+        }
+        var choice = _state.Picture;
+        var key = FormattableString.Invariant($"{_pictureNumber}|{choice.PlaceRight}|{choice.HeightMm}|{choice.GapMm}|{choice.LevelPercent}|{choice.Swap}");
+        if (key == _picture?.Key) return;
+        _fitView = true;
+        var outlines = _pictureSource.Outlines(choice.LevelPercent, choice.Swap);
+        _picture = NamePicture.Fit(outlines, choice.HeightMm, choice.PlaceRight, choice.GapMm, key);
+        _pictureImage = OutlinePreview.ToImage(_picture.Outlines);
     }
 
     Task SelectItem(IItemType item)
@@ -470,7 +560,8 @@
         _warning = "";
         try
         {
-            _result = _builder.Build(_names, _state.Item, Settings, _state.Arrange, cancel);
+            FitPicture();
+            _result = _builder.Build(_names, _state.Item, Settings, _state.Arrange, cancel, _picture);
             _status = Describe(_result);
             _warning = Problems(_result);
             // Saved only after a good build, so settings that break it are gone after a reload.
@@ -502,6 +593,11 @@
         // Isolated so a Hebrew name can't reorder the English words around it.
         var loose = r.NamesWithLooseParts.Take(3).Select(name => $"⁨{name}⁩").ToList();
         if (loose.Count > 0) problems.Add("Loose parts in: " + string.Join(", ", loose));
+        var font = Fonts.Library.Get(Settings.Font);
+        var notDrawn = _names.SelectMany(name => TextOutliner.CharactersNotDrawn(name, font)).Distinct().Take(5).ToList();
+        if (notDrawn.Count > 0) problems.Add("Can't draw: " + string.Join(" ", notDrawn.Select(c => $"⁨{c}⁩")));
+        if (_picture is { Outlines.Count: 0 }) problems.Add("Nothing in the picture is thick enough to print, so it was left out");
+        else if (_picture?.ThinShareRemoved > ThinShareWorthMentioning) problems.Add("Parts of the picture too thin to print were left out");
         return string.Join(". ", problems);
     }
 }

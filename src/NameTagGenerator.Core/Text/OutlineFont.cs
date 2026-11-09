@@ -21,6 +21,9 @@ public sealed class OutlineFont
     public bool HasHebrew => _regular.Has(0x05D0);
     public bool HasEnglish => _regular.Has('a');
 
+    /// <summary>True when the font itself has a drawing for this character.</summary>
+    public bool Has(int codePoint) => _regular.Has(codePoint);
+
     /// <summary>True when bold has to be made by thickening the regular outlines.</summary>
     public bool SimulatesBold => _bold is null && (_regular.Style & FontStyle.Bold) == 0;
 
@@ -86,6 +89,18 @@ public static class BundledFonts
     public static IReadOnlyDictionary<string, OutlineFont> All => Loaded.Value;
 
     public static OutlineFont Fallback => All[FallbackName];
+
+    static readonly Lazy<OutlineFont> LoadedEmoji = new(() =>
+    {
+        using var stream = OpenResource("emoji:NotoEmoji-Bold.ttf");
+        return OutlineFont.FromStreams(stream);
+    });
+
+    /// <summary>Draws emoji in one colour. Kept out of <see cref="All"/>, because it is not a font to choose for names.</summary>
+    public static OutlineFont Emoji => LoadedEmoji.Value;
+
+    /// <summary>The fonts shown under Handwriting in the font list.</summary>
+    public static bool IsHandwriting(string name) => name is "Gan CLM" or "Gveret Levin";
 
     public static IReadOnlyList<string> Names => All.Keys.OrderBy(n => n, StringComparer.OrdinalIgnoreCase).ToList();
 

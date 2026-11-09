@@ -1,0 +1,93 @@
+@using NameTagGenerator.Text
+@inject IJSRuntime JS
+
+<button type="button" id="font-button" class="font-button" popovertarget="font-list" aria-haspopup="true" aria-label="@($"Font: {Value}")" @onclick="Opening">
+    @if (Face is { } face)
+    {
+        <OutlineSvg Image="face" HeightPx="22" Align="xMinYMid meet" />
+    }
+    else
+    {
+        <span dir="auto">@Value</span>
+    }
+    <span class="font-arrow" aria-hidden="true">▾</span>
+</button>
+
+<div id="font-list" class="font-list" popover @ref="_panel">
+    @foreach (var (label, fonts) in Groups)
+    {
+        <div class="font-group">@label</div>
+        @foreach (var font in fonts)
+        {
+            @Row(font)
+        }
+    }
+    <div class="font-group">Your own</div>
+    @foreach (var font in Library.AddedNames)
+    {
+        @Row(font)
+    }
+    @* Opens the file picker straight from the click, because some browsers refuse it after any delay. *@
+    <button type="button" class="font-row font-upload" onclick="document.getElementById('font-list').hidePopover?.(); const file = document.getElementById('font-file'); file.value = ''; file.click();">Upload a font file…</button>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+    [Parameter, EditorRequired] public string Text { get; set; } = "";
+    [Parameter] public bool Bold { get; set; }
+    [Parameter] public string Connector { get; set; } = "";
+    [Parameter, EditorRequired] public FontLibrary Library { get; set; } = null!;
+    [Parameter, EditorRequired] public IReadOnlyList<(string Label, List<string> Fonts)> Groups { get; set; } = null!;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    readonly Dictionary<string, OutlineImage?> _samples = new();
+    string _samplesFor = "";
+    ElementReference _panel;
+
+    OutlineImage? Face => Sample(Value);
+
+    RenderFragment Row(string font) =>
+        @<button type="button" class="font-row @(font == Value ? "on" : null)" aria-pressed="@(font == Value ? "true" : "false")" popovertarget="font-list" popovertargetaction="hide" @onclick="() => ValueChanged.InvokeAsync(font)">
+            <span class="font-name" dir="auto">@font</span>
+            @if (_samples.GetValueOrDefault(font) is { } image)
+            {
+                <OutlineSvg Image="image" HeightPx="24" Align="xMaxYMid meet" />
+            }
+        </button>;
+
+    /// <summary>Samples are drawn only when the list opens, so typing a name stays smooth.</summary>
+    void Opening()
+    {
+        foreach (var font in Groups.SelectMany(g => g.Fonts).Concat(Library.AddedNames)) Sample(font);
+    }
+
+    OutlineImage? Sample(string font)
+    {
+        var key = $"{Text}\n{Bold}\n{Connector}";
+        if (key != _samplesFor)
+        {
+            _samples.Clear();
+            _samplesFor = key;
+        }
+        if (_samples.TryGetValue(font, out var known)) return known;
+
+        OutlineImage? image = null;
+        try
+        {
+            var outlines = Library.Get(font);
+            if (TextOutliner.DrawsOwnLetters(Text, outlines)) image = OutlinePreview.Text(Text, outlines, Bold, Connector);
+        }
+        catch (Exception)
+        {
+            // An uploaded font can fail on letters the upload check did not try. The list then shows just its name.
+        }
+        return _samples[font] = image;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        var module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/picker.js");
+        await module.InvokeVoidAsync("arrowKeys", _panel);
+    }
+}

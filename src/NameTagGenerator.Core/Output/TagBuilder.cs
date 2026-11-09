@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using NameTagGenerator.Geometry;
 using NameTagGenerator.Items;
+using NameTagGenerator.Pictures;
 using NameTagGenerator.Text;
 
 namespace NameTagGenerator.Output;
@@ -26,9 +27,10 @@ public sealed class TagBuilder
     /// <param name="fonts">Finds a font by name. Without one, only the built-in fonts are available.</param>
     public TagBuilder(Func<string, OutlineFont>? fonts = null) => _fonts = fonts ?? BundledFonts.Get;
 
-    public BuildResult Build(IReadOnlyList<string> names, IItemType item, ItemSettings settings, ArrangeSettings arrange, CancellationToken cancel)
+    /// <param name="picture">Goes beside every name, when there is one.</param>
+    public BuildResult Build(IReadOnlyList<string> names, IItemType item, ItemSettings settings, ArrangeSettings arrange, CancellationToken cancel, NamePicture? picture = null)
     {
-        var key = item.Id + JsonSerializer.Serialize(settings);
+        var key = item.Id + JsonSerializer.Serialize(settings) + picture?.Key;
         if (key != _modelsKey)
         {
             _models.Clear();
@@ -43,7 +45,7 @@ public sealed class TagBuilder
             var model = _models.GetOrAdd(name, n =>
             {
                 var text = TextOutliner.Build(n, family, settings.Bold, settings[Keys.FontSize], settings.Connector, settings.Hollow);
-                return item.Build(text, settings);
+                return item.Build(picture?.AddTo(text) ?? text, settings);
             });
             if (!model.Base.IsEmpty) models.Add((name, model));
         }
