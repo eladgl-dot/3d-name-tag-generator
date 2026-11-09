@@ -197,6 +197,7 @@
     SiteState _state = new();
     TagBuilder _builder = null!;
     CancellationTokenSource? _rebuild;
+    bool _buildWaiting;
     BuildResult? _result;
     List<string> _names = new();
     string _status = "";
@@ -406,18 +407,30 @@
 
     string DownloadName => _result is { Tags.Count: 1 } r ? Exporter.SafeFileName(r.Tags[0].Name) : "name tags";
 
-    Task Download3mf()
+    async Task Download3mf()
     {
+        await FinishWaitingBuild();
+        if (_result is null) return;
         using var file = new MemoryStream();
-        Exporter.Write3mf(file, DownloadName, _result!.Tags);
-        return SendFile(DownloadName + ".3mf", file, "model/3mf");
+        Exporter.Write3mf(file, DownloadName, _result.Tags);
+        await SendFile(DownloadName + ".3mf", file, "model/3mf");
     }
 
-    Task DownloadStl()
+    async Task DownloadStl()
     {
+        await FinishWaitingBuild();
+        if (_result is null) return;
         using var file = new MemoryStream();
-        Exporter.WriteStl(file, _result!.Tags);
-        return SendFile(DownloadName + ".stl", file, "model/stl");
+        Exporter.WriteStl(file, _result.Tags);
+        await SendFile(DownloadName + ".stl", file, "model/stl");
+    }
+
+    /// <summary>A change made moments ago is still waiting for typing to pause. The file must include it.</summary>
+    async Task FinishWaitingBuild()
+    {
+        if (!_buildWaiting) return;
+        _rebuild?.Cancel();
+        await Rebuild(CancellationToken.None);
     }
 
     async Task SendFile(string name, MemoryStream file, string contentType)
@@ -436,6 +449,7 @@
     {
         _rebuild?.Cancel();
         var cancel = _rebuild = new CancellationTokenSource();
+        _buildWaiting = true;
         try
         {
             await Task.Delay(250, cancel.Token);
@@ -449,6 +463,7 @@
 
     async Task Rebuild(CancellationToken cancel)
     {
+        _buildWaiting = false;
         var names = _state.Names;
         if (!names.SequenceEqual(_names)) _fitView = true;
         _names = names;

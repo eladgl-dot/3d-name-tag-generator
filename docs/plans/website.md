@@ -24,6 +24,7 @@ Built from the same C# code (Blazor WebAssembly). The EXE stays and shares that 
 - 15A Vowel points (niqqud): leave them. They appear only if someone types them.
 - 16A Start Phase 4, and stop for approval just before the push.
 - 17A Commit the help panel and the mixed-name fix now.
+- 18A Go live: commit the workflow and review fixes, turn on GitHub Pages, push the branch, merge to `main`.
 
 ## What the website does (first version)
 - Same items: keychain, pencil top, bookmark, desk plate, cup marker, wine glass marker.
@@ -64,7 +65,7 @@ Changes the owner will notice: a letter the chosen font does not have now comes 
 ### Phase 4: Publish
 - [ ] GitHub Actions: build and publish to GitHub Pages on every push to main. Verify: site live at https://eladgl-dot.github.io/3d-name-tag-generator/
 - [ ] Check in Chrome, Edge and on a phone width. Verify: `ui-check`.
-- [ ] `code-reviewer` before calling it done. Verify: high/med findings fixed.
+- [x] `code-reviewer` before calling it done. Verify: high/med findings fixed. Result: no high findings. Fixed, each reproduced first in headless Chrome: a download right after typing used the old names; one unreadable stored font lost all the others; storage that never answers left the page on Loading (now gives up after 5 s). Site tested under /3d-name-tag-generator/ as GitHub will serve it: 9 checks pass. Not fixed, cannot be tested on Windows: "Upload a font file" may not open the picker in Safari or on iPhone. Low items left for later: preview call in `Rebuild` catches only JS errors; `Repair` does not limit saved numbers; EXE fonts inside `.ttc` collections may pick the wrong face; odd characters in download names; `main` still reachable by Tab behind the phone help panel; .NET runtime missing from credits; `src/NameTagGenerator/result.json` is tracked; workflow has no test step.
 
 ## Tools I'll use
 | Tool | Type | Why | Cost hint |

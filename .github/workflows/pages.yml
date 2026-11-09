@@ -1,0 +1,50 @@
+# Builds the website and puts it on GitHub Pages after every push to main.
+name: Publish website
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish the site
+        run: dotnet publish src/NameTagGenerator.Web -c Release -o publish
+
+      # The site lives under /3d-name-tag-generator/ on github.io, not at the root.
+      - name: Point the site at its GitHub address
+        run: |
+          sed -i 's|<base href="/" />|<base href="/3d-name-tag-generator/" />|' publish/wwwroot/index.html
+          grep -q '<base href="/3d-name-tag-generator/" />' publish/wwwroot/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

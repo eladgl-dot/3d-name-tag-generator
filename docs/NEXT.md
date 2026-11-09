@@ -1,9 +1,9 @@
 # Next
 
 Branch: `website-phase-2`, not pushed or merged. Commit only when the owner asks. `code-reviewer` before merging to `main`.
-Active plan: [plans/website.md](plans/website.md). Phase 3 is done. Next: plan questions 1 (niqqud) and 2 (start Phase 4), then Phase 4. Build 0.2 after.
-Uncommitted, tested, not yet asked to commit: help panel (Web/Components/HelpPanel.razor, Home.razor, app.css, preview.js), mixed Hebrew and English fix (Core/Text/TextOutliner.cs, tests MixedDirectionTests.cs). The fix also changes the EXE; EXE not rebuilt.
-Website: `src/NameTagGenerator.Web` (Blazor). `preview.js` draws with three.js 0.170, copied into `wwwroot/lib/three`; OrbitControls.js has its import path edited. Before deploy: GitHub Pages needs `<base href>` set to the repo path.
+Active plan: [plans/website.md](plans/website.md). Phase 4: workflow written, `code-reviewer` done. Waiting for plan question 1 (go live). Then: commit, enable Pages with source GitHub Actions (`gh` is at `C:\Program Files\GitHub CLI\gh.exe`), push, merge to `main`, check the live site with `ui-check`. Build 0.2 after; the EXE has the mixed-name fix but is not rebuilt.
+Uncommitted, tested, not yet asked to commit: `.github/workflows/pages.yml`, review fixes (Home.razor, UploadedFonts.cs, fonts.js), plan and this file.
+Website: `src/NameTagGenerator.Web` (Blazor). `preview.js` draws with three.js 0.170, copied into `wwwroot/lib/three`; OrbitControls.js has its import path edited. The workflow sets `<base href>` to the repo path at publish time.
 Keep SixLabors.Fonts at 2.1.3 (owner's choice): newer versions stop Release builds without a licence key. Do not work around that.
 
 Waiting for the owner:

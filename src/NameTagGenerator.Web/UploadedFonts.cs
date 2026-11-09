@@ -14,7 +14,16 @@ public sealed class UploadedFonts(IJSRuntime js)
         {
             var store = await OpenStore();
             foreach (var name in await store.InvokeAsync<string[]>("names"))
-                Library.Add(await store.InvokeAsync<byte[]>("get", name));
+            {
+                try
+                {
+                    Library.Add(await store.InvokeAsync<byte[]>("get", name));
+                }
+                catch (JSException)
+                {
+                    // One unreadable file must not cost the others.
+                }
+            }
         }
         catch (JSException)
         {

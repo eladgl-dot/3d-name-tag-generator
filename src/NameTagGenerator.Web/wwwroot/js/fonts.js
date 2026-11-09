@@ -2,12 +2,16 @@
 const DATABASE = 'nametag-fonts';
 const STORE = 'fonts';
 
+const OPEN_WAIT_MS = 5000;
+
 function open() {
   return new Promise((resolve, reject) => {
+    // The page waits for this before it starts, and storage that never answers must not leave it on Loading.
+    const giveUp = setTimeout(() => reject(new Error('Font storage did not answer')), OPEN_WAIT_MS);
     const request = indexedDB.open(DATABASE, 1);
     request.onupgradeneeded = () => request.result.createObjectStore(STORE);
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
+    request.onsuccess = () => { clearTimeout(giveUp); resolve(request.result); };
+    request.onerror = () => { clearTimeout(giveUp); reject(request.error); };
   });
 }
 
