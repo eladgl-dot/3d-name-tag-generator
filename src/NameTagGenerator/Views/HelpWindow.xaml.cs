@@ -26,6 +26,7 @@ public partial class HelpWindow : Window
             "Desk name plate: Base height is its thickness at the top. It prints standing up, as it will sit on the desk.\n\n" +
             "Cup marker: a saddle that sits on top of the rim, with the name facing up. Set Cup diameter (across the outside) and Rim thickness to your cup, and the curved groove grips that rim. Inner and Outer grip depth set how far each wall reaches down the inside and the outside of the cup. In Bambu Studio it appears upside down and mirrored, because it prints name side down with no supports. Do not flip it.\n\n" +
             "Wine glass marker: set Stem size to your glass. The opening is narrower than the stem, so the clip snaps on and holds.\n\n" +
+            "Hanukkah candle: the name runs along the candle, first letter by the flame (Read upward turns it around). Letter size is a share of Candle width. Long names make the candle and letters smaller together, down to Smallest letters. Names with tall or deep letters (ל, ק) come out a little smaller so they stay inside the candle. Ring position puts the hole in a tab at the bottom or just under the flame.\n\n" +
             "Base and Letters above the preview choose the colours you see. They change only the preview, and you pick the real filaments in Bambu Studio.\n\n" +
             "Each item remembers its own settings."),
         new("arrange", "Arranging an array",

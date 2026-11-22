@@ -8,7 +8,9 @@ using SixLabors.Fonts;
 namespace NameTagGenerator.Text;
 
 /// <summary>Letter outlines of a name. <see cref="Connector"/> holds a hollow connector kept apart from the letters.</summary>
-public sealed record TextShape(Paths64 Letters, Paths64 Connector);
+/// <param name="RightToLeft">The name reads right to left, so its first letter is on the right.</param>
+/// <param name="LetterBand">Bottom and top of a plain letter in this font (ה, or H for English), with no tail: where the letters sit.</param>
+public sealed record TextShape(Paths64 Letters, Paths64 Connector, bool RightToLeft = false, (long Low, long High)? LetterBand = null);
 
 /// <summary>Turns a name into outlines. Runs anywhere .NET runs, including in a browser.</summary>
 public static class TextOutliner
@@ -64,7 +66,17 @@ public static class TextOutliner
         }
 
         var thicken = simulateBold ? emSize * SimulatedBoldPerSideEm : 0;
-        return new TextShape(Finish(letters, thicken), Finish(joins, thicken));
+        // Where a plain letter sits, thickened like the name, so items can size letters the same in every font.
+        var plain = new Paths64();
+        Place(rtl ? "ה" : "H", plain);
+        plain = Finish(plain, thicken);
+        (long, long)? band = null;
+        if (plain.Count > 0)
+        {
+            var plainBox = Poly.Bounds(plain);
+            band = (plainBox.MinY, plainBox.MaxY);
+        }
+        return new TextShape(Finish(letters, thicken), Finish(joins, thicken), rtl, band);
     }
 
     /// <summary>

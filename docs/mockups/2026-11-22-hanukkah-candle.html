@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hanukkah candle mockup</title>
+<style>
+:root { --bg:#161a20; --card:#1f252d; --line:#323a45; --text:#e8ecf1; --dim:#9aa5b2; --base:#1d5fa8; --base-edge:#154a85; --raised:#f7c46c; --accent:#f39c32; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 "Segoe UI", system-ui, sans-serif; }
+main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
+h1 { font-size:24px; margin:0 0 4px; }
+h2 { font-size:17px; margin:0 0 12px; }
+p.sub { color:var(--dim); margin:0 0 24px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:20px; }
+.row { display:flex; flex-wrap:wrap; gap:20px; }
+.row > .card { flex:1 1 320px; }
+svg text { font-family:"Heebo","Rubik","Segoe UI",sans-serif; }
+.cap { fill:var(--dim); font-size:13px; }
+.note { color:var(--dim); font-size:13px; margin:8px 0 0; }
+.panel { display:grid; grid-template-columns:1fr 110px; gap:8px 12px; align-items:center; font-size:14px; }
+.panel .h { grid-column:1/-1; color:var(--dim); font-size:12px; text-transform:uppercase; letter-spacing:.05em; margin-top:8px; }
+.panel input, .panel select { width:100%; background:#12161b; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:5px 8px; font:inherit; }
+.tog { width:38px; height:20px; border-radius:10px; background:#3a4350; position:relative; }
+.tog::after { content:""; position:absolute; width:16px; height:16px; border-radius:50%; background:#cfd6de; top:2px; left:2px; }
+.new { color:var(--accent); font-size:11px; margin-left:6px; }
+.gone { color:#6b7684; text-decoration:line-through; }
+table { border-collapse:collapse; width:100%; font-size:14px; }
+td, th { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; }
+th { color:var(--dim); font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+<h1>Hanukkah candle keychain</h1>
+<p class="sub">Mockup, 22 Nov 2026. Shapes and sizes are drawn to scale (4 px = 1 mm). Text lengths are estimates; the real app measures them from the font.</p>
+
+<div class="card">
+  <h2>1. Front view: how it sizes for short and long names</h2>
+  <svg id="lineup" viewBox="0 0 1060 510" width="100%" role="img" aria-label="Five candles"></svg>
+  <p class="note">Blue = base colour (2 mm). Yellow = raised colour (1 mm on top): the name and the big flame inlay. Body length = name + 6 mm at each end, never shorter than 45 mm, never longer than 85 mm. Past 85 mm the letters and the candle shrink together (here to about 8.5 mm letters, floor 7 mm).</p>
+</div>
+
+<div class="row">
+  <div class="card">
+    <h2>2. Close-up of the flame and ring (question 1)</h2>
+    <svg id="ring" viewBox="0 0 480 420" width="100%" role="img" aria-label="Ring options"></svg>
+  </div>
+  <div class="card">
+    <h2>3. Side view: one colour change</h2>
+    <svg viewBox="0 0 440 220" width="100%" role="img" aria-label="Side view">
+      <text x="20" y="40" class="cap">Name and flame inlay: colour 2, 1 mm, same height</text>
+      <rect x="60" y="70" width="70" height="20" fill="var(--raised)"/>
+      <rect x="160" y="70" width="200" height="20" fill="var(--raised)"/>
+      <rect x="20" y="90" width="400" height="40" fill="var(--base)"/>
+      <text x="20" y="160" class="cap">Body, flame rim, ring: colour 1, 2 mm</text>
+      <text x="20" y="190" class="cap">From 2 mm up there is only colour 2, so the printer</text>
+      <text x="20" y="208" class="cap">changes filament once (Bambu: colour change at 2.0 mm).</text>
+    </svg>
+  </div>
+</div>
+
+<div class="row">
+  <div class="card">
+    <h2>4. Settings panel when "Hanukkah candle" is chosen</h2>
+    <div class="panel">
+      <div class="h">Item</div>
+      <span>Item</span><select><option>Hanukkah candle</option></select>
+      <div class="h">Common</div>
+      <span>Text weight (mm)</span><input value="0">
+      <span>Base height (mm)</span><input value="2">
+      <span>Letter height (mm) <span style="color:var(--dim)">raised part</span></span><input value="1">
+      <span class="gone">Font size, Outline, Fill gaps</span><span style="color:var(--dim);font-size:12px">hidden: the candle sets them</span>
+      <div class="h">Candle</div>
+      <span>Candle width (mm)<span class="new">new</span></span><input value="16">
+      <span>Letter size (% of width)<span class="new">new</span></span><input value="70">
+      <span>Smallest letters (mm)<span class="new">new</span></span><input value="7">
+      <span>Shortest body (mm)<span class="new">new</span></span><input value="45">
+      <span>Longest body (mm)<span class="new">new</span></span><input value="85">
+      <span>End margin (mm)<span class="new">new</span></span><input value="6">
+      <span>Flame rim (mm)<span class="new">new</span></span><input value="1.5">
+      <span>Ring hole (mm)<span class="new">new</span></span><input value="4">
+      <span>Read upward<span class="new">new</span></span><div class="tog"></div>
+    </div>
+    <p class="note">Same look as the other items' panels; the panel is built from the item's list of settings, so nothing new is drawn by hand.</p>
+  </div>
+  <div class="card">
+    <h2>5. Reading direction (question 3)</h2>
+    <svg id="dir" viewBox="0 0 440 370" width="100%" role="img" aria-label="Reading direction"></svg>
+    <p class="note">Recommended: the first letter is always by the flame. Hebrew turns one way, English the other. "Read upward" flips both.</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Sizes used in the drawing</h2>
+  <table>
+    <tr><th>Name</th><th>Letters</th><th>Candle width</th><th>Body length</th><th>Why</th></tr>
+    <tr><td>נוי</td><td>11.2 mm</td><td>16 mm</td><td>45 mm</td><td>Short: minimum length, name centred</td></tr>
+    <tr><td>נויה</td><td>11.2 mm</td><td>16 mm</td><td>45 mm</td><td>Short: minimum length</td></tr>
+    <tr><td>Ben</td><td>11.2 mm</td><td>16 mm</td><td>45 mm</td><td>Short: minimum length</td></tr>
+    <tr><td>אלכסנדרה</td><td>11.2 mm</td><td>16 mm</td><td>≈ 74 mm</td><td>Name + 2 × 6 mm</td></tr>
+    <tr><td>אלכסנדרה מרים</td><td>≈ 8.6 mm</td><td>≈ 12.3 mm</td><td>85 mm</td><td>Too long: shrunk together to fit 85 mm</td></tr>
+  </table>
+  <p class="note">Flame: 1.2 × width wide, 1.3 × width tall above the body, joint 0.7 × width. Its rounded tip is a circle of 0.18 × width.</p>
+</div>
+</main>
+
+<script>
+const S = 4; // px per mm
+const NS = "http://www.w3.org/2000/svg";
+function el(parent, tag, attrs, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text) e.textContent = text;
+  parent.appendChild(e); return e;
+}
+// Hull of two circles on the same vertical line. y grows downwards (SVG).
+function hullPath(cx, y1, r1, y2, r2) {
+  const D = y1 - y2, a = Math.asin((r1 - r2) / D), c = Math.cos(a), s = Math.sin(a);
+  const p1r = [cx + r1 * c, y1 - r1 * s], p2r = [cx + r2 * c, y2 - r2 * s];
+  const p2l = [cx - r2 * c, y2 - r2 * s], p1l = [cx - r1 * c, y1 - r1 * s];
+  return `M${p1r} L${p2r} A${r2} ${r2} 0 0 0 ${p2l} L${p1l} A${r1} ${r1} 0 1 0 ${p1r} Z`;
+}
+// One candle. x = centre, top = top of the body (px). Returns bottom y.
+function candle(svg, x, top, o) {
+  const w = o.w * S, L = o.len * S, g = el(svg, "g", {});
+  const R = 0.6 * w, d = Math.sqrt(R * R - (0.35 * w) ** 2), rt = 0.18 * w;
+  const c1 = top - d, c2 = top - 1.3 * w + rt, rim = 1.5 * S;
+  // ring
+  if (o.ring !== "top") {
+    const ry = top + L + 3.5 * S;
+    el(g, "circle", { cx: x, cy: ry, r: 5 * S, fill: "var(--base)" });
+  }
+  el(g, "path", { d: hullPath(x, c1, R, c2, rt), fill: "var(--base)" });
+  el(g, "rect", { x: x - w / 2, y: top, width: w, height: L, rx: 2 * S, fill: "var(--base)" });
+  el(g, "path", { d: hullPath(x, c1, R - rim, c2, rt - rim > 0.6 * S ? rt - rim : 0.6 * S), fill: "var(--raised)" });
+  let holeY = top + L + 3.5 * S;
+  if (o.ring === "top") holeY = top + 5 * S;
+  el(g, "circle", { cx: x, cy: holeY, r: 2 * S, fill: "var(--card)" });
+  // name, along the body
+  if (o.name) {
+    const textStart = o.ring === "top" ? 10 : 6;
+    const tl = o.tlen * S, mid = top + (o.ring === "top" ? (textStart * S + (L - 6 * S)) / 2 + 0 : L / 2);
+    const he = /[֐-׿]/.test(o.name);
+    const rot = (he ? -90 : 90) * (o.up ? -1 : 1);
+    el(g, "text", { x: 0, y: 0, transform: `translate(${x},${mid}) rotate(${rot})`, "text-anchor": "middle",
+      "dominant-baseline": "central", "font-size": o.letters * S * 1.25, "font-weight": 700, fill: "var(--raised)",
+      textLength: tl, lengthAdjust: "spacingAndGlyphs", direction: he ? "rtl" : "ltr" }, o.name);
+  }
+  return top + L + (o.ring === "top" ? 0 : 8.5 * S);
+}
+
+// 1. Lineup
+const lu = document.getElementById("lineup");
+const items = [
+  { name: "נוי", w: 16, len: 45, letters: 11.2, tlen: 19, cap: "\u200Eנוי\u200E: short, min 45 mm" },
+  { name: "נויה", w: 16, len: 45, letters: 11.2, tlen: 26, cap: "\u200Eנויה\u200E: min 45 mm" },
+  { name: "Ben", w: 16, len: 45, letters: 11.2, tlen: 22, cap: "Ben: min 45 mm" },
+  { name: "אלכסנדרה", w: 16, len: 74, letters: 11.2, tlen: 62, cap: "\u200Eאלכסנדרה\u200E: 74 mm" },
+  { name: "אלכסנדרה מרים", w: 12.3, len: 85, letters: 8.6, tlen: 73, cap: "Long: shrunk to fit 85 mm" },
+];
+items.forEach((it, i) => {
+  const x = 110 + i * 210, top = 110;
+  const bottom = candle(lu, x, top, it);
+  el(lu, "text", { x, y: 503, "text-anchor": "middle", class: "cap" }, it.cap);
+});
+
+// 2. Ring options
+const rg = document.getElementById("ring");
+candle(rg, 120, 110, { w: 16, len: 60, ring: "bottom" });
+candle(rg, 360, 110, { w: 16, len: 60, ring: "top" });
+el(rg, "text", { x: 120, y: 395, "text-anchor": "middle", class: "cap" }, "A: tab at the bottom (as written)");
+el(rg, "text", { x: 120, y: 412, "text-anchor": "middle", class: "cap" }, "hangs flame down");
+el(rg, "text", { x: 360, y: 395, "text-anchor": "middle", class: "cap" }, "B: hole under the flame");
+el(rg, "text", { x: 360, y: 412, "text-anchor": "middle", class: "cap" }, "hangs upright (recommended)");
+el(rg, "text", { x: 240, y: 22, "text-anchor": "middle", class: "cap" }, "Rounded tip · joint 70% of width · inlay inset 1.5 mm · no wick");
+
+// 5. Direction
+const dr = document.getElementById("dir");
+candle(dr, 110, 100, { name: "נויה", w: 16, len: 45, letters: 11.2, tlen: 26 });
+candle(dr, 320, 100, { name: "Ben", w: 16, len: 45, letters: 11.2, tlen: 22 });
+el(dr, "text", { x: 110, y: 362, "text-anchor": "middle", class: "cap" }, "\u200Eנ\u200E at the flame");
+el(dr, "text", { x: 320, y: 362, "text-anchor": "middle", class: "cap" }, "B at the flame");
+</script>
+</body>
+</html>

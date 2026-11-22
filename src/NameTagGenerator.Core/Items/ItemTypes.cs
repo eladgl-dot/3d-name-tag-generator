@@ -15,6 +15,8 @@ public static class Keys
     public const string FillGaps = "fillGaps";
     public const string Tilt = "tilt", StandDepth = "standDepth";
     public const string RimThickness = "rimThickness", CupDiameter = "cupDiameter", GripLength = "gripLength", GripDepthInner = "gripDepthInner", GripDepthOuter = "gripDepthOuter", SlotWall = "slotWall";
+    public const string CandleWidth = "candleWidth", LetterFill = "letterFill", MinLetters = "minLetters", MinLength = "minLength", MaxLength = "maxLength";
+    public const string EndMargin = "endMargin", FlameRim = "flameRim", ReadUp = "readUp", CandleRing = "candleRing";
     public const string StemDiameter = "stemDiameter", StemOpening = "stemOpening", StemWall = "stemWall", StemSide = "stemSide";
 }
 
@@ -65,6 +67,9 @@ public interface IItemType
     IReadOnlyList<Field> Fields { get; }
     IReadOnlyDictionary<string, double> Defaults { get; }
     ItemModel Build(TextShape text, ItemSettings settings);
+
+    /// <summary>Common settings this item works out by itself, so the panel leaves them out.</summary>
+    IReadOnlyCollection<string> HiddenCommonFields => Array.Empty<string>();
 }
 
 public static class ItemRegistry
@@ -120,7 +125,12 @@ public static class TagAreas
         var box = Poly.Bounds(Poly.Union(text.Letters, text.Connector));
         var dx = dxFor(box);
         var dy = -(box.MinY + box.MaxY) / 2;
-        return new TextShape(Poly.Translate(text.Letters, dx, dy), Poly.Translate(text.Connector, dx, dy));
+        return text with
+        {
+            Letters = Poly.Translate(text.Letters, dx, dy),
+            Connector = Poly.Translate(text.Connector, dx, dy),
+            LetterBand = text.LetterBand is { } band ? (band.Low + dy, band.High + dy) : null,
+        };
     }
 
     public static long Center(Box b) => -(b.MinX + b.MaxX) / 2;

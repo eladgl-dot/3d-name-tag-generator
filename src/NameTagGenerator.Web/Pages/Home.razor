@@ -61,7 +61,7 @@
                         </div>
                         <InputFile id="font-file" hidden accept=".ttf,.otf" OnChange="FontFileChosen" />
                         <div class="full"><Toggle Label="Bold" @bind-Value="Settings.Bold" @bind-Value:after="ScheduleRebuild" /></div>
-                        @foreach (var field in ItemRegistry.CommonFields)
+                        @foreach (var field in ItemRegistry.CommonFields.Where(f => !_state.Item.HiddenCommonFields.Contains(f.Key)))
                         {
                             <FieldEditor @key="@($"{_state.Item.Id}/{field.Key}")" Field="field" Settings="Settings" Changed="ScheduleRebuild" />
                         }

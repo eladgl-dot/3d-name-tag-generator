@@ -66,8 +66,12 @@ public class OutlineParityTests
             foreach (var (font, name) in new[] { ("Gan CLM", "ליב"), ("Rubik", "נויה"), ("Suez One", "שלום עליכם"), ("Heebo", "Noa") })
             {
                 var size = s[Keys.FontSize];
-                var before = item.Build(WindowsOutliner.Build(name, FontCatalog.WindowsFamily(font), false, size, "-", false), s);
-                var after = item.Build(TextOutliner.Build(name, FontCatalog.Resolve(font), false, size, "-", false), s);
+                var shared = TextOutliner.Build(name, FontCatalog.Resolve(font), false, size, "-", false);
+                // The Windows reference records no direction or plain-letter height; give it the same, so only the outlines differ.
+                var windows = WindowsOutliner.Build(name, FontCatalog.WindowsFamily(font), false, size, "-", false)
+                    with { RightToLeft = shared.RightToLeft, LetterBand = shared.LetterBand };
+                var before = item.Build(windows, s);
+                var after = item.Build(shared, s);
                 var change = (after.Base.VolumeMm3 + after.Letters.VolumeMm3) / (before.Base.VolumeMm3 + before.Letters.VolumeMm3) - 1;
                 if (Math.Abs(change) > 0.01) failures.Add($"{item.Id} {font} {name}: {change:P2}");
             }

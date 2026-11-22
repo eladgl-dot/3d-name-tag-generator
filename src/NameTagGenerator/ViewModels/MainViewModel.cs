@@ -325,7 +325,7 @@ public sealed class MainViewModel : Observable
 
     void BuildFieldLists()
     {
-        TextFields = ItemRegistry.CommonFields.Select(MakeField).ToList();
+        TextFields = ItemRegistry.CommonFields.Where(f => !_item.HiddenCommonFields.Contains(f.Key)).Select(MakeField).ToList();
         ItemFields = _item.Fields.Select(MakeField).ToList();
         ConnectorFields = new FieldVm[]
         {

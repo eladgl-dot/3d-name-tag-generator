@@ -22,3 +22,9 @@ In progress: help panel, waiting on plan question 1. Settings and font upload no
 Done: help panel, mixed Hebrew and English fix, publish workflow, three review fixes, website live on GitHub Pages (766693c).
 Checked: 1396 tests; live site in headless Chrome and Edge, desktop and phone width.
 Next: build 0.2 of the EXE; try the site on a real phone.
+
+## 2026-11-09 (later)
+Done: emoji in names, picture beside the name, font list with previews, Gveret Levin handwriting font; live at 995397f.
+Checked: 1614 tests; browser checks and Bambu headless on a file from the live site.
+Next: try it on a real phone; EXE part of the plan (step 6), then build 0.2.
+- 2026-11-22: Added the Hanukkah candle item (mockup approved, ring at the bottom or under the flame). 1877 tests, website and Bambu headless checks pass, `code-reviewer` findings fixed. Pushed to `main`.

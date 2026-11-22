@@ -104,6 +104,6 @@ public sealed class NamePicture
         var dx = _placeRight ? nameBox.MaxX + gap - box.MinX : nameBox.MinX - gap - box.MaxX;
         var dy = (nameBox.MinY + nameBox.MaxY - box.MinY - box.MaxY) / 2;
         var moved = Clipper.TranslatePaths(Outlines, dx, dy);
-        return new TextShape(new Paths64(text.Letters.Concat(moved)), text.Connector);
+        return text with { Letters = new Paths64(text.Letters.Concat(moved)) };
     }
 }
