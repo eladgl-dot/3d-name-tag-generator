@@ -63,4 +63,28 @@ Hiding common fields needs one small optional addition to `IItemType` (a list of
 
 Not verified until a real print: how the flame inlay and the ring hole feel on the printed piece.
 
+## Change 2 (23 Nov 2026): more ring positions
+Owner asked for: no keychain hole, and a hole at the top of the flame.
+Mockup: [2026-11-23-candle-ring-options.html](../mockups/2026-11-23-candle-ring-options.html)
+
+Plan: "Ring position" gets two new entries after the existing ones, so saved settings keep working: "Top of the flame" and "No hole". Bottom tab stays the default. Tests first (hole inside the base with a wall, inlay and name clear of the hole, one piece, no hole at all for "No hole"), then code, website check, Bambu headless, `code-reviewer`, push.
+
+### Questions
+6. Hole at the top of the flame: which shape?
+   - A. Hole inside the flame tip: outline unchanged, the yellow inlay wraps round the hole. **(recommended)**
+   - B. A small blue loop sticking out above the tip: full yellow flame, candle about 4 mm taller.
+   - C. Both, as two separate entries.
+7. Push to `main` when done, same rules as before (checks + `code-reviewer`, no extra approval)?
+   - A. Yes. **(recommended)**
+   - B. No, show me first.
+
+### Owner answers
+- 6B Loop above the flame tip, drawn by the owner as a thin ring (picture, 23 Nov): outer about 7–8 mm, hole about 4.5 mm. Built as a 4 mm hole with a 2 mm wall (thinner than 2 mm would break on a keyring), overlapping the tip so it is one piece. List entries: "Top of the flame" and "No hole".
+- 7 not answered: build and check everything, stop before pushing and ask.
+
+### Steps
+- [x] 7. Tests for the new positions: loop above the tip (2 names), no hole (2 names), list order, 3 unusual-settings cases with the loop.
+- [x] 8. Code until they pass. Full suite 1885 pass. Website: loop 19 × 72 mm, no hole 19 × 66 mm for a 45 mm body, both previews correct, 3MF and STL download. Bambu headless: Base (filament 1) and Letters (filament 2), no repairs.
+- [ ] 9. Website check, Bambu headless, `code-reviewer`, help text, push. Done except the push. Review fix: an unknown saved ring value (4, -1, 2.7) now means Bottom tab, as before. Added tests for that, the loop with Text weight and Read upward, the smallest hole, and No hole on a narrow candle. Full suite 1892 pass.
+
 **Tools I'll use:** `dev-practices` skill for test-first (low), `build-runner` agent for build and tests (low), `ui-check` agent for the website screenshots (med), `rtl-check` agent for Hebrew (low), `code-reviewer` agent before merging (med), `doc-sync` agent for docs (low). Bambu Studio headless from the command line (low).

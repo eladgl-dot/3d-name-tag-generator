@@ -189,6 +189,69 @@ public class CandleTests
         Assert.True(AreaMm2(nameOnly) < 0.01);
     }
 
+    [Theory]
+    [InlineData("נוי")]
+    [InlineData("אלכסנדרה")]
+    public void LoopOnTopOfTheFlame_SitsAboveTheTip_InOnePiece(string name)
+    {
+        var (m, l) = Build(name, s => s.Values[Keys.CandleRing] = 2);
+        var hole = m.RingHoleCenter!.Value;
+        Assert.Equal(0, Poly.Mm(hole.X), 2);
+        // The hole starts above the flame's tip, so the flame inlay stays whole.
+        Assert.True(Poly.Mm(hole.Y) - 2 >= 1.3 * l.Width, $"hole bottom {Poly.Mm(hole.Y) - 2:0.00}");
+        Assert.Equal(PipResult.Outside, Poly.PointInArea(hole, m.BaseArea));
+        Assert.Equal(PipResult.Outside, Poly.PointInArea(hole, m.LetterArea));
+        // A 2 mm wall on top of the hole, and no tab below the body.
+        Assert.Equal(Poly.Mm(hole.Y) + 2 + 2, Poly.Mm(Poly.Bounds(m.BaseArea).MaxY), 1);
+        Assert.Equal(-l.BodyLength, Poly.Mm(Poly.Bounds(m.BaseArea).MinY), 1);
+        // Same body as with the bottom tab, and the inlay is as big.
+        var (plain, plainLayout) = Build(name);
+        Assert.Equal(plainLayout, l);
+        var top = new Paths64 { Poly.Rect(-50, 0.01, 50, 80) };
+        Assert.Equal(AreaMm2(Poly.Intersect(plain.LetterArea, top)), AreaMm2(Poly.Intersect(m.LetterArea, top)), 1);
+        Assert.Equal(1, m.LooseParts);
+        Assert.True(m.Base.IsManifold(), m.Base.DescribeOpenEdges());
+    }
+
+    [Theory]
+    [InlineData("נוי")]
+    [InlineData("Ben")]
+    [InlineData("Ben", 5, 8)]
+    public void NoHole_HasNoHoleAndNoTab(string name, double width = 16, double hole = 4)
+    {
+        var (m, l) = Build(name, s => { s.Values[Keys.CandleRing] = 3; s.Values[Keys.CandleWidth] = width; s.Values[Keys.RingHole] = hole; });
+        Assert.Null(m.RingHoleCenter);
+        Assert.All(m.BaseArea, p => Assert.True(Clipper.IsPositive(p), "the base has a hole"));
+        var box = Poly.Bounds(m.BaseArea);
+        Assert.Equal(-l.BodyLength, Poly.Mm(box.MinY), 1);
+        Assert.Equal(1.3 * l.Width, Poly.Mm(box.MaxY), 1);
+        Assert.Equal(1, m.LooseParts);
+        Assert.True(m.Base.IsManifold(), m.Base.DescribeOpenEdges());
+        Assert.True(m.Letters.IsManifold(), m.Letters.DescribeOpenEdges());
+    }
+
+    [Theory]
+    [InlineData(4)]
+    [InlineData(-1)]
+    [InlineData(2.7)]
+    [InlineData(double.NaN)]
+    public void UnknownRingValue_MeansTheBottomTab(double value)
+    {
+        var (m, l) = Build("נוי", s => s.Values[Keys.CandleRing] = value);
+        var (plain, plainLayout) = Build("נוי");
+        Assert.Equal(plainLayout, l);
+        Assert.Equal(plain.RingHoleCenter, m.RingHoleCenter);
+        Assert.Equal(AreaMm2(plain.BaseArea), AreaMm2(m.BaseArea), 3);
+    }
+
+    [Fact]
+    public void RingChoices_KeepTheOldOrder_WithTheNewOnesAtTheEnd()
+    {
+        var field = Item.Fields.Single(f => f.Key == Keys.CandleRing);
+        Assert.Equal(new[] { "Bottom tab", "Under the flame", "Top of the flame", "No hole" }, field.Choices);
+        Assert.Equal(0, Item.Defaults[Keys.CandleRing]);
+    }
+
     // Two squares: a big one on the right and a small one on the left.
     static TextShape BigRightSmallLeft(bool rtl) => new(
         new Paths64 { Poly.Rect(0, 0, 4, 4), Poly.Rect(10, 0, 20, 10) }, new Paths64(), rtl);
@@ -245,6 +308,11 @@ public class CandleTests
         new object[] { "letter size 0", "נויה", (Action<ItemSettings>)(x => { x.Values[Keys.LetterFill] = 0; x.Values[Keys.MinLetters] = 0; }) },
         new object[] { "hollow connector", "נוי גל", (Action<ItemSettings>)(x => x.Hollow = true) },
         new object[] { "emoji only", "⭐", (Action<ItemSettings>)(_ => { }) },
+        new object[] { "narrowest, loop on top", "נוי", (Action<ItemSettings>)(x => { x.Values[Keys.CandleWidth] = 5; x.Values[Keys.CandleRing] = 2; }) },
+        new object[] { "wide, big hole, loop on top", "נויה", (Action<ItemSettings>)(x => { x.Values[Keys.CandleWidth] = 30; x.Values[Keys.RingHole] = 8; x.Values[Keys.CandleRing] = 2; }) },
+        new object[] { "weight 1, read upward, loop on top", "שלמה", (Action<ItemSettings>)(x => { x.Values[Keys.Weight] = 1; x.Values[Keys.ReadUp] = 1; x.Values[Keys.CandleRing] = 2; }) },
+        new object[] { "smallest hole, loop on top", "נוי", (Action<ItemSettings>)(x => { x.Values[Keys.RingHole] = 1; x.Values[Keys.CandleRing] = 2; }) },
+        new object[] { "long name, loop on top", "אלכסנדרה מרים", (Action<ItemSettings>)(x => x.Values[Keys.CandleRing] = 2) },
     };
 
     [Theory]

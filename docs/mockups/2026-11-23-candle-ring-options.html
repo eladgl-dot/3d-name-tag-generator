@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Candle ring options</title>
+<style>
+:root { --bg:#161a20; --card:#1f252d; --line:#323a45; --text:#e8ecf1; --dim:#9aa5b2; --base:#1d5fa8; --raised:#f7c46c; --accent:#f39c32; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 "Segoe UI", system-ui, sans-serif; }
+main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
+h1 { font-size:24px; margin:0 0 4px; }
+h2 { font-size:17px; margin:0 0 12px; }
+p.sub { color:var(--dim); margin:0 0 24px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:20px; }
+.row { display:flex; flex-wrap:wrap; gap:20px; }
+.row > .card { flex:1 1 320px; }
+svg text { font-family:"Heebo","Rubik","Segoe UI",sans-serif; }
+.cap { fill:var(--dim); font-size:13px; }
+.capb { fill:var(--text); font-size:14px; font-weight:600; }
+.note { color:var(--dim); font-size:13px; margin:8px 0 0; }
+.panel { display:grid; grid-template-columns:1fr 170px; gap:8px 12px; align-items:center; font-size:14px; }
+.panel select { width:100%; background:#12161b; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:5px 8px; font:inherit; }
+ul.opts { margin:6px 0 0; padding-left:20px; color:var(--dim); font-size:13px; }
+.new { color:var(--accent); font-size:11px; margin-left:6px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Candle: ring position options</h1>
+<p class="sub">Mockup, 23 Nov 2026. Drawn to scale (4 px = 1 mm), candle width 16 mm, name "נויה". Blue = base colour, yellow = raised colour.</p>
+
+<div class="card">
+  <h2>1. The five choices side by side</h2>
+  <svg id="lineup" viewBox="0 0 1060 430" width="100%" role="img" aria-label="Five ring positions"></svg>
+  <p class="note">C and D are the two ways to put the hole at the top of the flame (question 6). E has no hole: the body ends in a plain rounded end. The body is 45 mm in all of them; with the hole under the flame (B) the name moves down to make room, as it does today.</p>
+</div>
+
+<div class="row">
+  <div class="card">
+    <h2>2. Close-up of the flame top (question 6)</h2>
+    <svg id="close" viewBox="0 0 480 400" width="100%" role="img" aria-label="Flame top close-up"></svg>
+    <p class="note">Scale 8 px = 1 mm. Hole 4 mm in both.</p>
+  </div>
+  <div class="card">
+    <h2>3. The setting</h2>
+    <div class="panel">
+      <span>Ring position</span>
+      <select size="4" style="height:auto">
+        <option selected>Bottom tab</option>
+        <option>Under the flame</option>
+        <option>Top of the flame</option>
+        <option>No hole</option>
+      </select>
+    </div>
+    <p class="note">Same "Ring position" list, two new entries at the end. Bottom tab stays the default, so saved settings do not change.</p>
+    <p class="note">"Ring hole (mm)" stays in the panel and is ignored with "No hole" (the panel cannot hide one setting depending on another today).</p>
+  </div>
+</div>
+</main>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+function el(parent, tag, attrs, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text) e.textContent = text;
+  parent.appendChild(e); return e;
+}
+// Hull of two circles on one vertical line (SVG y grows downwards).
+function hullPath(cx, y1, r1, y2, r2) {
+  const D = y1 - y2, a = Math.asin((r1 - r2) / D), c = Math.cos(a), s = Math.sin(a);
+  const p1r = [cx + r1 * c, y1 - r1 * s], p2r = [cx + r2 * c, y2 - r2 * s];
+  const p2l = [cx - r2 * c, y2 - r2 * s], p1l = [cx - r1 * c, y1 - r1 * s];
+  return `M${p1r} L${p2r} A${r2} ${r2} 0 0 0 ${p2l} L${p1l} A${r1} ${r1} 0 1 0 ${p1r} Z`;
+}
+let maskId = 0;
+// One candle. x = centre, top = top edge of the body (px), S = px per mm.
+// ring: "bottom" | "under" | "flame" | "loop" | "none"
+function candle(svg, x, top, o) {
+  const S = o.S ?? 4, wmm = 16, w = wmm * S, L = (o.len ?? 45) * S, hole = 4 * S;
+  const R = 0.6 * w, d = Math.sqrt(R * R - (0.35 * w) ** 2), rt = 0.18 * w, rim = 1.5 * S;
+  const c1 = top - d, c2 = top - 1.3 * w + rt, tipTop = top - 1.3 * w;
+  const g = el(svg, "g", {});
+  let holeY = null;
+  if (o.ring === "bottom") { holeY = top + L + 3.5 * S; el(g, "circle", { cx: x, cy: holeY, r: 5 * S, fill: "var(--base)" }); }
+  if (o.ring === "under") holeY = top + (Math.max(2, 0.1 * wmm) + 2) * S;
+  if (o.ring === "flame") holeY = tipTop + 4 * S;            // 2 mm wall above the hole
+  if (o.ring === "loop") { holeY = tipTop + 1.5 * S; el(g, "circle", { cx: x, cy: holeY, r: 4.5 * S, fill: "var(--base)" }); }
+  el(g, "path", { d: hullPath(x, c1, R, c2, rt), fill: "var(--base)" });
+  el(g, "rect", { x: x - w / 2, y: top, width: w, height: L, rx: 2 * S, fill: "var(--base)" });
+  // Raised parts (inlay + name), with a 1 mm clearance cut around the hole.
+  const id = "m" + (++maskId);
+  const m = el(svg, "mask", { id });
+  el(m, "rect", { x: x - 200, y: top - 200, width: 400, height: L + 400, fill: "white" });
+  if (holeY !== null) el(m, "circle", { cx: x, cy: holeY, r: hole / 2 + 1 * S, fill: "black" });
+  const raised = el(g, "g", { mask: `url(#${id})` });
+  el(raised, "path", { d: hullPath(x, c1, R - rim, c2, Math.max(rt - rim, 0.6 * S)), fill: "var(--raised)" });
+  if (o.name) {
+    const reserve = o.ring === "under" ? 7 * S : 0;
+    const mid = top + reserve + (L - reserve) / 2;
+    el(raised, "text", { x: 0, y: 0, transform: `translate(${x},${mid}) rotate(-90)`, "text-anchor": "middle",
+      "dominant-baseline": "central", "font-size": 11.2 * S * 1.25, "font-weight": 700, fill: "var(--raised)",
+      textLength: 26 * S, lengthAdjust: "spacingAndGlyphs", direction: "rtl" }, o.name);
+  }
+  if (holeY !== null) el(g, "circle", { cx: x, cy: holeY, r: hole / 2, fill: "var(--card)" });
+}
+
+// 1. Lineup
+const lu = document.getElementById("lineup");
+const items = [
+  { ring: "bottom", t: "A. Bottom tab", s: "default, hangs flame down" },
+  { ring: "under", t: "B. Under the flame", s: "as today" },
+  { ring: "flame", t: "C. In the flame tip", s: "new, recommended" },
+  { ring: "loop", t: "D. Loop above the tip", s: "new" },
+  { ring: "none", t: "E. No hole", s: "new, e.g. a magnet or gift" },
+];
+items.forEach((it, i) => {
+  const x = 110 + i * 210;
+  candle(lu, x, 140, { ...it, name: "נויה" });
+  el(lu, "text", { x, y: 395, "text-anchor": "middle", class: "capb" }, it.t);
+  el(lu, "text", { x, y: 415, "text-anchor": "middle", class: "cap" }, it.s);
+});
+
+// 2. Close-up
+const cl = document.getElementById("close");
+candle(cl, 120, 250, { ring: "flame", S: 8, len: 6 });
+candle(cl, 360, 250, { ring: "loop", S: 8, len: 6 });
+el(cl, "text", { x: 120, y: 30, "text-anchor": "middle", class: "capb" }, "C. Hole in the flame tip");
+el(cl, "text", { x: 360, y: 30, "text-anchor": "middle", class: "capb" }, "D. Loop above the tip");
+const notes = [
+  [120, ["Outline unchanged, hangs upright.", "2 mm wall above the hole,", "≈ 2.8 mm beside it.", "Yellow inlay wraps round the hole", "(a 1 mm gap keeps the hole clean)."]],
+  [360, ["Full yellow flame kept.", "A small blue loop (2.5 mm wall)", "sticks out of the tip.", "Candle gets ≈ 4 mm taller.", "Hangs upright."]],
+];
+// Notes sit under the body.
+notes.forEach(([x, lines]) => lines.forEach((t, i) => el(cl, "text", { x, y: 325 + i * 17, "text-anchor": "middle", class: "cap" }, t)));
+</script>
+</body>
+</html>

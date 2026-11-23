@@ -22,6 +22,10 @@ public sealed class CandleItem : IItemType
     // Closest the raised name may come to the candle's side.
     const double SideRim = 1.2;
     const double RingWall = 3, RingOverlap = 1.5;
+    // Loop above the flame: its wall, and how far the hole's lower edge sits above the flame's tip.
+    const double LoopWall = 2, LoopLift = 0.5;
+    // Ring position values, in the order of the "Ring position" list.
+    const int BottomTab = 0, UnderFlame = 1, TopOfFlame = 2, NoHole = 3;
     // Ring under the flame: least gap from the body's top edge to the hole, the least wall beside it,
     // and the clearance between the hole and the raised name.
     const double HoleTopGap = 2, HoleSideWall = 1.5, HoleClearance = 1;
@@ -31,7 +35,7 @@ public sealed class CandleItem : IItemType
 
     public IReadOnlyList<Field> Fields { get; } = new[]
     {
-        new Field(Keys.CandleRing, "Ring position", FieldKind.Choice, Choices: new[] { "Bottom tab", "Under the flame" }),
+        new Field(Keys.CandleRing, "Ring position", FieldKind.Choice, Choices: new[] { "Bottom tab", "Under the flame", "Top of the flame", "No hole" }),
         new Field(Keys.ReadUp, "Read upward", FieldKind.Toggle),
         new Field(Keys.CandleWidth, "Candle width (mm)", Min: 5, Step: 0.5),
         new Field(Keys.LetterFill, "Letter size (% of width)", Min: 20, Step: 5),
@@ -52,13 +56,20 @@ public sealed class CandleItem : IItemType
 
     public IReadOnlyCollection<string> HiddenCommonFields { get; } = new[] { Keys.FontSize, Keys.Outline, Keys.FillGaps };
 
+    // The chosen ring position. Anything not in the list (an old or hand-edited value) means the bottom tab, as before.
+    static int Ring(ItemSettings s)
+    {
+        var v = s[Keys.CandleRing];
+        return v is UnderFlame or TopOfFlame or NoHole ? (int)v : BottomTab;
+    }
+
     public static CandleLayout Measure(TextShape text, ItemSettings s) => Plan(text, s).Layout;
 
     public ItemModel Build(TextShape text, ItemSettings s)
     {
         var (layout, name, hole, holeY) = Plan(text, s);
         double w = layout.Width, body = layout.BodyLength;
-        var ringOnTop = s[Keys.CandleRing] == 1;
+        var ring = Ring(s);
 
         // Body with rounded corners, its top edge at y = 0.
         var corner = Math.Min(2, w / 4);
@@ -71,14 +82,14 @@ public sealed class CandleItem : IItemType
         var flame = new Paths64 { Poly.ConvexHull(Poly.Circle(0, centreY, 2 * r), Poly.Circle(0, 1.3 * w - tip, 2 * tip)) };
         var inlay = Poly.Inflate(flame, -s[Keys.FlameRim]);
 
-        var holeArea = new Paths64 { Poly.Circle(0, holeY, hole) };
-
         var (letters, baseText) = TagAreas.Build(name, s);
         var baseArea = Poly.Union(Poly.Union(bodyArea, flame), baseText);
-        if (!ringOnTop) baseArea = Poly.Union(baseArea, new Paths64 { Poly.Circle(0, holeY, hole + 2 * RingWall) });
-        baseArea = Poly.Difference(baseArea, holeArea);
-
         var raised = Poly.Union(letters, inlay);
+        if (ring == NoHole) return TagAreas.Solid(baseArea, raised, s);
+
+        if (ring == BottomTab) baseArea = Poly.Union(baseArea, new Paths64 { Poly.Circle(0, holeY, hole + 2 * RingWall) });
+        if (ring == TopOfFlame) baseArea = Poly.Union(baseArea, new Paths64 { Poly.Circle(0, holeY, hole + 2 * LoopWall) });
+        baseArea = Poly.Difference(baseArea, new Paths64 { Poly.Circle(0, holeY, hole) });
         raised = Poly.Difference(raised, new Paths64 { Poly.Circle(0, holeY, hole + 2 * HoleClearance) });
         return TagAreas.Solid(baseArea, raised, s, new Point64(0, Poly.U(holeY)));
     }
@@ -91,7 +102,8 @@ public sealed class CandleItem : IItemType
         // Never narrower than the side rims plus a little, so there is always room for letters.
         var w0 = Math.Max(s[Keys.CandleWidth], sideRims + 2);
         var fill = Math.Max(0.05, s[Keys.LetterFill] / 100);
-        var ringOnTop = s[Keys.CandleRing] == 1;
+        var ring = Ring(s);
+        var ringOnTop = ring == UnderFlame;
         double HoleGap(double width) => Math.Max(HoleTopGap, FlameDip * width);
         // Room the hole takes at the top of the body. Worked out at the full width, which needs the most.
         var reserve = ringOnTop ? HoleGap(w0) + s[Keys.RingHole] + HoleClearance : 0;
@@ -164,8 +176,14 @@ public sealed class CandleItem : IItemType
 
         var name = text with { Letters = Place(text.Letters), Connector = Place(text.Connector) };
         // Ring under the flame: the hole keeps a wall on each side. Bottom tab: the tab grows with the hole.
+        // Loop on top: the hole starts just above the flame's tip, and the loop's wall reaches down into the tip.
         var hole = ringOnTop ? Math.Min(s[Keys.RingHole], width - 2 * HoleSideWall) : s[Keys.RingHole];
-        var holeY = ringOnTop ? -(HoleGap(width) + hole / 2) : -bodyLength - (hole / 2 + RingWall - RingOverlap);
+        var holeY = ring switch
+        {
+            UnderFlame => -(HoleGap(width) + hole / 2),
+            TopOfFlame => 1.3 * width + LoopLift + hole / 2,
+            _ => -bodyLength - (hole / 2 + RingWall - RingOverlap),
+        };
         return (new CandleLayout(width, letter, bodyLength, nameLength), name, hole, holeY);
     }
 }
