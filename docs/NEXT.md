@@ -1,6 +1,7 @@
 # Next
 
 Branch: `emoji-picture-fonts`, same as `main` at 995397f, both pushed. Only notes files changed since. Commit only when the owner asks. `code-reviewer` before merging to `main`.
+**Done 26 Nov:** [plans/back-text-fill-bed.md](plans/back-text-fill-bed.md): candle back text (3rd part, filament 3), Arrange "Fill the bed" (several beds = Bambu plates), 3MF Separate objects / One object. Pushed to `main`. Waiting for owner: real print of a candle with back text; open a multi-bed 3MF in the Bambu window to see if it keeps the plates.
 Website is LIVE: https://eladgl-dot.github.io/3d-name-tag-generator/ Every push to `main` republishes it.
 Hanukkah candle item: done and live, see [plans/hanukkah-candle.md](plans/hanukkah-candle.md). Waiting for a real print. The EXE gets it on its next build.
 Active plan: [plans/website.md](plans/website.md). All phases done. Low items left are listed in the plan's Phase 4. Active now: [plans/emoji-picture-fonts.md](plans/emoji-picture-fonts.md): website part is done and live. Next: its step 6 (picture controls and font preview in the EXE), then build 0.2. The EXE already gets typed emoji, the new font and the mixed-name fix from the shared code once rebuilt. `gh` is at `C:\Program Files\GitHub CLI\gh.exe`, not on the PATH.
@@ -14,7 +15,7 @@ Waiting for the owner:
 Hand tests open: EXE preview rotation, Save dialogs, Add font file, a PC without .NET 10, 100% text size. Website: real phone, touch, real graphics card, Safari or iPhone (font upload picker may not open there). Low priority: EXE toolbar wraps when narrow; open colour button low contrast.
 
 Run and test:
-- Tests: `dotnet test NameTagGenerator.slnx` (1614 pass). Site: `dotnet run --project src/NameTagGenerator.Web`, or publish Release (trimming only shows there).
+- Tests: `dotnet test NameTagGenerator.slnx` (1940 pass). Site: `dotnet run --project src/NameTagGenerator.Web`, or publish Release (trimming only shows there).
 - EXE: `dotnet publish src/NameTagGenerator -c Release -o dist` (close any running copy from `dist` first). Version comes from the csproj. v0.1.2 and v0.1.3 (dist/0.1.x) not released.
 
 Rules:

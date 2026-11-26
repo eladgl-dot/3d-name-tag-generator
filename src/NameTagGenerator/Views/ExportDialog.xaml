@@ -11,6 +11,15 @@
         <RadioButton x:Name="Separate" GroupName="Mode" Margin="0,0,0,12" Checked="OnChoice">
             <TextBlock x:Name="SeparateText" TextWrapping="Wrap" />
         </RadioButton>
+        <StackPanel x:Name="ObjectsChoice" Margin="0,8,0,0">
+            <TextBlock Text="In a 3MF file" FontWeight="SemiBold" Margin="0,0,0,6" />
+            <RadioButton x:Name="SeparateObjectsChoice" GroupName="Objects" Margin="0,0,0,4">
+                <TextBlock Text="Separate objects: every name can be moved alone in Bambu Studio" TextWrapping="Wrap" />
+            </RadioButton>
+            <RadioButton x:Name="OneObjectChoice" GroupName="Objects" Margin="0,0,0,12">
+                <TextBlock x:Name="OneObjectText" Text="One object" TextWrapping="Wrap" />
+            </RadioButton>
+        </StackPanel>
         <TextBlock x:Name="Summary" TextWrapping="Wrap" Opacity="0.8" Margin="0,0,0,24" />
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Content="Cancel" IsCancel="True" MinWidth="88" Margin="0,0,8,0" />

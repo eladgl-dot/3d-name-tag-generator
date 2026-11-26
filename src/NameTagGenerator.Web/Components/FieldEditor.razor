@@ -16,6 +16,12 @@
             </select>
         </label>
         break;
+    case FieldKind.Text:
+        <label class="full">
+            @Field.Label
+            <input type="text" dir="auto" value="@Settings.Text(Field.Key)" placeholder="Empty = none" @oninput="@(e => SetText(e.Value?.ToString() ?? ""))" />
+        </label>
+        break;
     default:
         <NumberField Label="@Field.Label" Value="@Settings[Field.Key]" Min="@Field.Min" ValueChanged="@Set" />
         break;
@@ -25,6 +31,12 @@
     [Parameter, EditorRequired] public Field Field { get; set; } = default!;
     [Parameter, EditorRequired] public ItemSettings Settings { get; set; } = default!;
     [Parameter] public EventCallback Changed { get; set; }
+
+    Task SetText(string value)
+    {
+        Settings.Texts[Field.Key] = value;
+        return Changed.InvokeAsync();
+    }
 
     Task Set(double value)
     {

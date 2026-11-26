@@ -29,7 +29,8 @@ public static class PreviewBuilder
         return Color.FromRgb((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
     }
 
-    public static Model3D Build(IEnumerable<PlacedTag> tags, (double Width, double Depth)? showPlate, string? baseColour = null, string? letterColour = null)
+    /// <param name="showPlates">Beds to draw: the first centred on the origin, the next ones Step mm to the right each.</param>
+    public static Model3D Build(IEnumerable<PlacedTag> tags, (double Width, double Depth, int Count, double Step)? showPlates, string? baseColour = null, string? letterColour = null)
     {
         var baseMaterial = Make(ParseColour(baseColour, ParseColour(DefaultBaseColour, Colors.Blue)));
         var letterMaterial = Make(ParseColour(letterColour, ParseColour(DefaultLetterColour, Colors.White)));
@@ -39,8 +40,12 @@ public static class PreviewBuilder
             var turn = TurnFor(tag.Model);
             group.Children.Add(ToModel(tag.Model.Base, tag.X, tag.Y, baseMaterial, turn));
             if (!tag.Model.Letters.IsEmpty) group.Children.Add(ToModel(tag.Model.Letters, tag.X, tag.Y, letterMaterial, turn));
+            // The back text lies under the base; it shows when the view is turned to look from below.
+            if (tag.Model.Back is { IsEmpty: false } back) group.Children.Add(ToModel(back, tag.X, tag.Y, letterMaterial, turn));
         }
-        if (showPlate is { } plate) group.Children.Add(Plate(plate.Width, plate.Depth));
+        if (showPlates is { } plates)
+            for (var i = 0; i < Math.Max(1, plates.Count); i++)
+                group.Children.Add(Plate(plates.Width, plates.Depth, i * plates.Step));
         group.Freeze();
         return group;
     }
@@ -74,14 +79,14 @@ public static class PreviewBuilder
         return new GeometryModel3D(geometry, material);
     }
 
-    static GeometryModel3D Plate(double width, double depth)
+    static GeometryModel3D Plate(double width, double depth, double x)
     {
         const double z = -0.2;
         var geometry = new MeshGeometry3D
         {
             Positions = new Point3DCollection
             {
-                new(-width / 2, -depth / 2, z), new(width / 2, -depth / 2, z), new(width / 2, depth / 2, z), new(-width / 2, depth / 2, z),
+                new(x - width / 2, -depth / 2, z), new(x + width / 2, -depth / 2, z), new(x + width / 2, depth / 2, z), new(x - width / 2, depth / 2, z),
             },
             TriangleIndices = new Int32Collection { 0, 1, 2, 0, 2, 3 },
         };

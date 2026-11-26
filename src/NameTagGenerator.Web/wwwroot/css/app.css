@@ -104,6 +104,7 @@ main { display: flex; flex-direction: column; min-width: 0; position: sticky; in
 @supports not (position-area: bottom) { .menu { margin: auto; } }
 
 .bar { display: flex; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); border-top: 1px solid var(--line); flex-wrap: wrap; }
+.bar .seg button { min-height: 34px; }
 .bar .hint { margin: 0; flex: 1; min-width: 200px; }
 
 .status { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); padding: var(--s2) var(--s4); border-top: 1px solid var(--line); font-size: var(--font-label); color: var(--muted); min-height: 34px; }

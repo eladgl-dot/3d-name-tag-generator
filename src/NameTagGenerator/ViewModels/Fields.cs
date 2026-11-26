@@ -105,6 +105,20 @@ public sealed class ToggleFieldVm : FieldVm
     }
 }
 
+/// <summary>Free text, such as the candle's back text. Hebrew and English.</summary>
+public sealed class TextFieldVm : FieldVm
+{
+    readonly Action<string> _set;
+    string _text;
+    public TextFieldVm(string label, string text, Action<string> set) : base(label) => (_text, _set) = (text, set);
+
+    public string Text
+    {
+        get => _text;
+        set { _text = value; Raise(); _set(value); }
+    }
+}
+
 public sealed class ChoiceFieldVm : FieldVm
 {
     readonly Action<int> _set;

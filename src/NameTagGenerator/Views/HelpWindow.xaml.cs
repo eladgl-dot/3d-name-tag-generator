@@ -10,7 +10,7 @@ public partial class HelpWindow : Window
     public static IReadOnlyList<HelpTopic> AllTopics { get; } = new HelpTopic[]
     {
         new("start", "Quick start",
-            "1.  Choose an item: keychain, pencil top, bookmark, desk name plate, cup marker or wine glass marker.\n" +
+            "1.  Choose an item: keychain, pencil top, bookmark, desk name plate, cup marker, wine glass marker or Hanukkah candle.\n" +
             "2.  Type names, or paste a column from Excel, then press Ctrl+Enter.\n" +
             "3.  Change the settings and rotate the 3D preview. No file is written until step 4.\n" +
             "4.  Click Save, or Send to Bambu Studio.\n\n" +
@@ -26,12 +26,13 @@ public partial class HelpWindow : Window
             "Desk name plate: Base height is its thickness at the top. It prints standing up, as it will sit on the desk.\n\n" +
             "Cup marker: a saddle that sits on top of the rim, with the name facing up. Set Cup diameter (across the outside) and Rim thickness to your cup, and the curved groove grips that rim. Inner and Outer grip depth set how far each wall reaches down the inside and the outside of the cup. In Bambu Studio it appears upside down and mirrored, because it prints name side down with no supports. Do not flip it.\n\n" +
             "Wine glass marker: set Stem size to your glass. The opening is narrower than the stem, so the clip snaps on and holds.\n\n" +
-            "Hanukkah candle: the name runs along the candle, first letter by the flame (Read upward turns it around). Letter size is a share of Candle width. Long names make the candle and letters smaller together, down to Smallest letters. Names with tall or deep letters (ל, ק) come out a little smaller so they stay inside the candle. Ring position puts the hole in a tab at the bottom, just under the flame, in a loop above the flame, or leaves it out.\n\n" +
+            "Hanukkah candle: the name runs along the candle, first letter by the flame (Read upward turns it around). Letter size is a share of Candle width. Long names make the candle and letters smaller together, down to Smallest letters. Names with tall or deep letters (ל, ק) come out a little smaller so they stay inside the candle. Ring position puts the hole in a tab at the bottom, just under the flame, in a loop above the flame, or leaves it out. Back text (optional) is the same on every candle: it is set into the bottom, flush, as its own part (filament 3), and reads correctly when you turn the candle over. Flip back text turns it end over end. The longer of name and back text sets the candle's length.\n\n" +
             "Base and Letters above the preview choose the colours you see. They change only the preview, and you pick the real filaments in Bambu Studio.\n\n" +
             "Each item remembers its own settings."),
         new("arrange", "Arranging an array",
             "Click Arrange above the preview. It shows every name on the plate, and changes appear as you make them.\n\n" +
             "Fit plate, One row, One column and Square lay the names out in one click, and they keep working as you add names.\n\n" +
+            "Fill the bed packs the names tightly and turns some sideways to fit more. When a bed is full it starts another, shown side by side. Each bed becomes its own plate in Bambu Studio.\n\n" +
             "Columns: how many names per row. 0 (auto) fits as many as the plate allows. Typing a number here overrides the buttons.\n" +
             "Gap: space between tags.\n" +
             "Plate width and depth: your printer's plate. 256 × 256 mm suits Bambu X1, P1 and A1 printers. A warning appears if the array does not fit.\n\n" +
@@ -43,7 +44,8 @@ public partial class HelpWindow : Window
             "Add font file loads any .ttf or .otf file and remembers it.\n\n" +
             "If you see the wrong letter shapes, that font probably has no Hebrew. Choose one from the Hebrew groups."),
         new("bambu", "Printing in two colours",
-            "Send to Bambu Studio opens your tags there as one object with two parts: Base on filament 1 and Letters on filament 2. Choose your two colours and slice.\n\n" +
+            "Send to Bambu Studio opens your tags there with Base on filament 1, Letters on filament 2 and the candle's Back text on filament 3. Choose your colours and slice.\n\n" +
+            "When you save several names, the Export window asks how the 3MF holds them: Separate objects (each name can be moved alone in Bambu Studio) or One object (one per bed when Fill the bed uses several beds). Send to Bambu Studio uses the same choice.\n\n" +
             "If Bambu Studio is already open, save your work there first. The app warns you before sending.\n\n" +
             "Save offers STL or 3MF. An STL has no colours, so use 3MF to keep the two parts ready for colouring.\n\n" +
             "The filament figure assumes solid PETG, so it is an upper limit. Bambu Studio gives the real amount after slicing."),

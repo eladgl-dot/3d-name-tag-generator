@@ -6,6 +6,7 @@ using System.Windows.Data;
 using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using NameTagGenerator.Geometry;
 using NameTagGenerator.Items;
 using NameTagGenerator.Output;
 using NameTagGenerator.Text;
@@ -216,6 +217,12 @@ public sealed class MainViewModel : Observable
         }
     }
 
+    public bool ShapeFillBed
+    {
+        get => _state.Arrange.Shape == ArrangeShape.FillBed;
+        set { if (value) SetShape(ArrangeShape.FillBed); }
+    }
+
     public bool ShapeRow
     {
         get => _state.Arrange.Shape == ArrangeShape.OneRow;
@@ -246,6 +253,7 @@ public sealed class MainViewModel : Observable
     void RaiseShapes()
     {
         Raise(nameof(ShapeFit));
+        Raise(nameof(ShapeFillBed));
         Raise(nameof(ShapeRow));
         Raise(nameof(ShapeColumn));
         Raise(nameof(ShapeSquare));
@@ -359,6 +367,7 @@ public sealed class MainViewModel : Observable
     {
         FieldKind.Toggle => new ToggleFieldVm(f.Label, Settings[f.Key] != 0, v => SetValue(f.Key, v ? 1 : 0)),
         FieldKind.Choice => new ChoiceFieldVm(f.Label, f.Choices ?? Array.Empty<string>(), (int)Settings[f.Key], v => SetValue(f.Key, v)),
+        FieldKind.Text => new TextFieldVm(f.Label, Settings.Text(f.Key), v => { Settings.Texts[f.Key] = v; ScheduleRebuild(); }),
         _ => new NumberFieldVm(f.Label, Settings[f.Key], f.Min, v => SetValue(f.Key, v)),
     };
 
@@ -472,13 +481,16 @@ public sealed class MainViewModel : Observable
         }
         if (_previewAll)
         {
-            PreviewModel = PreviewBuilder.Build(_result.Tags, (_state.Arrange.PlateWidth, _state.Arrange.PlateHeight), BaseColour, LetterColour);
+            var a = _state.Arrange;
+            PreviewModel = PreviewBuilder.Build(_result.Tags, (a.PlateWidth, a.PlateHeight, _result.Array.BedCount, a.PlateWidth + ArrayLayout.BedSpacing(a)), BaseColour, LetterColour);
             return;
         }
         // The plate order can differ from the list, so find the selected name itself.
         var selected = _selectedIndex >= 0 && _selectedIndex < Names.Count ? Names[_selectedIndex] : null;
         var tag = _result.Tags.FirstOrDefault(t => t.Name == selected) ?? _result.Tags[0];
-        PreviewModel = PreviewBuilder.Build(new[] { tag with { X = 0, Y = 0 } }, null, BaseColour, LetterColour);
+        // Centred on its own base, so a tag Fill the bed turned still sits in the middle.
+        var box = Poly.Bounds(tag.Model.BaseArea);
+        PreviewModel = PreviewBuilder.Build(new[] { tag with { X = -Poly.Mm(box.MinX + box.MaxX) / 2, Y = -Poly.Mm(box.MinY + box.MaxY) / 2 } }, null, BaseColour, LetterColour);
     }
 
     void UpdateStatus()
@@ -492,13 +504,16 @@ public sealed class MainViewModel : Observable
 
         var a = _result.Array;
         var grams = _result.VolumeMm3 / 1000 * PetgGramsPerCm3;
-        var nameCount = _result.Tags.Count == 1 ? "1 name" : $"{_result.Tags.Count} names, {a.Columns} × {a.Rows}";
+        var nameCount = _result.Tags.Count == 1 ? "1 name"
+            : a.Columns == 0 ? $"{_result.Tags.Count} names on {a.BedCount} {(a.BedCount == 1 ? "bed" : "beds")}"
+            : $"{_result.Tags.Count} names, {a.Columns} × {a.Rows}";
         Status = $"{a.TotalWidth:0} × {a.TotalHeight:0} × {_result.HeightMm:0.#} mm  ·  {nameCount}  ·  up to {grams:0.#} g PETG";
 
         var problems = new List<string>();
         if (!a.FitsPlate) problems.Add($"Does not fit the {_state.Arrange.PlateWidth:0} × {_state.Arrange.PlateHeight:0} mm plate");
         var loose = _result.NamesWithLooseParts.Take(3).ToList();
-        if (loose.Count > 0) problems.Add("Loose parts in: " + string.Join(", ", loose));
+        // Isolated so a Hebrew name can't reorder the English words around it.
+        if (loose.Count > 0) problems.Add("Loose parts in: " + string.Join(", ", loose.Select(name => $"\u2068{name}\u2069")));
         Warning = string.Join("  ·  ", problems);
     }
 
@@ -510,9 +525,11 @@ public sealed class MainViewModel : Observable
 
         if (tags.Count > 1)
         {
-            var dialog = new ExportDialog(tags.Count, _result.Array.Columns, _result.Array.Rows) { Owner = Application.Current.MainWindow };
+            var dialog = new ExportDialog(tags.Count, _result.Array.Columns, _result.Array.Rows, _result.Array.BedCount, _state.SeparateObjects) { Owner = Application.Current.MainWindow };
             if (dialog.ShowDialog() != true) return;
             separate = dialog.OnePerName;
+            _state.SeparateObjects = dialog.SeparateObjects;
+            _state.Save();
         }
 
         try
@@ -537,7 +554,7 @@ public sealed class MainViewModel : Observable
         };
         if (dialog.ShowDialog() != true) return;
 
-        if (dialog.FilterIndex == 2) Exporter.Save3mf(dialog.FileName, suggested, tags);
+        if (dialog.FilterIndex == 2) Exporter.Save3mf(dialog.FileName, suggested, tags, _state.SeparateObjects, _state.Arrange);
         else Exporter.SaveStl(dialog.FileName, tags);
         Status = "Saved " + Path.GetFileName(dialog.FileName);
     }
@@ -573,7 +590,8 @@ public sealed class MainViewModel : Observable
         var running = BambuStudio.IsRunning;
         if (running || tags.Count > 1)
         {
-            var text = tags.Count > 1 ? $"Send all {tags.Count} names to Bambu Studio as one object?" : "Send this name to Bambu Studio?";
+            var how = _state.SeparateObjects ? "each name its own object" : "as one object";
+            var text = tags.Count > 1 ? $"Send all {tags.Count} names to Bambu Studio, {how}?" : "Send this name to Bambu Studio?";
             if (running) text += "\n\nBambu Studio is already open. Save your work there first, because the new file may open in that window.";
             if (MessageBox.Show(text, "Send to Bambu Studio", MessageBoxButton.OKCancel, MessageBoxImage.Question, MessageBoxResult.Cancel) != MessageBoxResult.OK)
                 return;
@@ -585,7 +603,7 @@ public sealed class MainViewModel : Observable
             Directory.CreateDirectory(folder);
             var title = tags.Count == 1 ? Exporter.SafeFileName(tags[0].Name) : _item.Id + "_tags";
             var file = Path.Combine(folder, title + ".3mf");
-            Exporter.Save3mf(file, title, tags);
+            Exporter.Save3mf(file, title, tags, _state.SeparateObjects, _state.Arrange);
             BambuStudio.Open(exe, file);
             Status = "Sent to Bambu Studio";
         }

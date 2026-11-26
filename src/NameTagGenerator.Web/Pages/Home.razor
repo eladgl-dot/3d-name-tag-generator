@@ -124,6 +124,7 @@
                             <label class="full">
                                 Shape
                                 <select @bind="_state.Arrange.Shape" @bind:after="ScheduleRebuild">
+                                    <option value="@ArrangeShape.FillBed">Fill the bed</option>
                                     <option value="@ArrangeShape.Columns">Columns</option>
                                     <option value="@ArrangeShape.OneRow">One row</option>
                                     <option value="@ArrangeShape.OneColumn">One column</option>
@@ -167,9 +168,13 @@
                     }
                 </div>
                 <div class="bar">
+                    <div class="seg" role="group" aria-label="3MF as">
+                        <button type="button" class="@(_state.SeparateObjects ? "on" : null)" aria-pressed="@(_state.SeparateObjects ? "true" : "false")" @onclick="() => SetSeparate(true)">Separate objects</button>
+                        <button type="button" class="@(_state.SeparateObjects ? null : "on")" aria-pressed="@(_state.SeparateObjects ? "false" : "true")" @onclick="() => SetSeparate(false)">One object</button>
+                    </div>
                     <button type="button" class="primary" disabled="@NothingToSave" @onclick="Download3mf">Download 3MF</button>
                     <button type="button" class="secondary" disabled="@NothingToSave" @onclick="DownloadStl">Download STL</button>
-                    <p class="hint">Double-click the 3MF to open it in Bambu Studio. Base and letters come in as two parts, ready for two colours.</p>
+                    <p class="hint">Double-click the 3MF to open it in Bambu Studio. Base, letters and back text come in as their own parts, ready for their own colours. @(_state.SeparateObjects ? "Separate objects: every name can be moved alone." : "One object: all names move together.")</p>
                 </div>
             </main>
         </div>
@@ -484,8 +489,10 @@
             var bases = PreviewMesh.Base(tags);
             var letters = PreviewMesh.Letters(tags);
             var plate = _previewAll && tags.Count > 0;
+            var beds = plate && _result is not null ? _result.Array.BedCount : 1;
+            var step = _state.Arrange.PlateWidth + ArrayLayout.BedSpacing(_state.Arrange);
             await _preview.InvokeVoidAsync("show", bases.Positions, bases.Indices, letters.Positions, letters.Indices,
-                plate ? _state.Arrange.PlateWidth : 0, plate ? _state.Arrange.PlateHeight : 0, _state.BaseColour, _state.LetterColour, _fitView && tags.Count > 0);
+                plate ? _state.Arrange.PlateWidth : 0, plate ? _state.Arrange.PlateHeight : 0, beds, step, _state.BaseColour, _state.LetterColour, _fitView && tags.Count > 0);
             if (tags.Count > 0) _fitView = false;
         }
         catch (JSException ex)
@@ -502,7 +509,7 @@
         await FinishWaitingBuild();
         if (_result is null) return;
         using var file = new MemoryStream();
-        Exporter.Write3mf(file, DownloadName, _result.Tags);
+        Exporter.Write3mf(file, DownloadName, _result.Tags, _state.SeparateObjects, _state.Arrange);
         await SendFile(DownloadName + ".3mf", file, "model/3mf");
     }
 
@@ -529,6 +536,12 @@
     }
 
     Task SetConnectorOutline(double v) { Settings.Values[Keys.ConnectorOutline] = v; return ScheduleRebuild(); }
+    void SetSeparate(bool separate)
+    {
+        _state.SeparateObjects = separate;
+        SaveSettings();
+    }
+
     Task SetColumns(double v) { _state.Arrange.Columns = (int)v; return ScheduleRebuild(); }
     Task SetGap(double v) { _state.Arrange.GapX = _state.Arrange.GapY = v; return ScheduleRebuild(); }
     Task SetPlateWidth(double v) { _state.Arrange.PlateWidth = v; return ScheduleRebuild(); }
@@ -582,7 +595,9 @@
         if (r.Tags.Count == 0) return "";
         var a = r.Array;
         var grams = r.VolumeMm3 / 1000 * PetgGramsPerCm3;
-        var names = r.Tags.Count == 1 ? "1 name" : $"{r.Tags.Count} names, {a.Columns} × {a.Rows}";
+        var names = r.Tags.Count == 1 ? "1 name"
+            : a.Columns == 0 ? $"{r.Tags.Count} names on {a.BedCount} {(a.BedCount == 1 ? "bed" : "beds")}"
+            : $"{r.Tags.Count} names, {a.Columns} × {a.Rows}";
         return string.Create(CultureInfo.InvariantCulture, $"{a.TotalWidth:0} × {a.TotalHeight:0} × {r.HeightMm:0.#} mm, {names}, up to {grams:0.#} g PETG");
     }
 

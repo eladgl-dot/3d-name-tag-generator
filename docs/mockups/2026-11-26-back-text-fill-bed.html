@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back text, Fill the bed, 3MF objects</title>
+<style>
+:root { --bg:#161a20; --card:#1f252d; --line:#323a45; --text:#e8ecf1; --dim:#9aa5b2; --base:#1d5fa8; --raised:#f7c46c; --back:#e05a6a; --accent:#f39c32; --plate:#4a4f58; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 "Segoe UI", system-ui, sans-serif; }
+main { max-width:1100px; margin:0 auto; padding:24px 16px 60px; }
+h1 { font-size:24px; margin:0 0 4px; }
+h2 { font-size:17px; margin:0 0 12px; }
+p.sub { color:var(--dim); margin:0 0 24px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:20px; }
+.row { display:flex; flex-wrap:wrap; gap:20px; }
+.row > .card { flex:1 1 320px; }
+svg text { font-family:"Heebo","Rubik","Segoe UI",sans-serif; }
+.cap { fill:var(--dim); font-size:13px; }
+.capb { fill:var(--text); font-size:14px; font-weight:600; }
+.note { color:var(--dim); font-size:13px; margin:8px 0 0; }
+.panel { display:grid; grid-template-columns:1fr 190px; gap:8px 12px; align-items:center; font-size:14px; }
+.panel input, .panel select { width:100%; background:#12161b; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:5px 8px; font:inherit; }
+.new { color:var(--accent); font-size:11px; margin-left:6px; }
+.menu { background:#12161b; border:1px solid var(--line); border-radius:10px; padding:12px; font-size:14px; }
+.menu .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.menu label { display:flex; flex-direction:column; gap:3px; color:var(--dim); font-size:13px; }
+.menu select, .menu input { background:var(--card); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:5px 8px; font:inherit; }
+.seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg span { padding:6px 14px; font-size:14px; color:var(--dim); }
+.seg span.on { background:var(--accent); color:#1b1b1b; font-weight:600; }
+button.primary { background:var(--accent); color:#1b1b1b; border:0; border-radius:8px; padding:8px 18px; font:600 14px "Segoe UI", sans-serif; }
+.status { font-size:13px; color:var(--dim); margin-top:6px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Candle back text, Fill the bed, 3MF objects</h1>
+<p class="sub">Mockup, 26 Nov 2026. Candles at 4 px = 1 mm, width 16 mm. Blue = base, yellow = name and flame inlay, red = back text (filament 3, any colour you pick in Bambu).</p>
+
+<div class="card">
+  <h2>1. Candle with back text "חנוכה שמח"</h2>
+  <svg id="candles" viewBox="0 0 1060 520" width="100%" role="img" aria-label="Candle front, back and side"></svg>
+  <p class="note">The back text is longer than the name "נוי", so it sets the body length (here 66 mm instead of 45). On the bed the back text lies mirrored (face down); turn the candle over and it reads normally, as in B. Empty "Back text" = the candle exactly as today.</p>
+</div>
+
+<div class="row">
+  <div class="card">
+    <h2>2. Candle settings: two new fields</h2>
+    <div class="panel">
+      <span>Ring position</span><select><option>Bottom tab</option></select>
+      <span>Read upward</span><span style="color:var(--dim)">off</span>
+      <span>Back text<span class="new">NEW</span></span><input dir="auto" value="חנוכה שמח" placeholder="Empty = no back text">
+      <span>Back depth (mm)<span class="new">NEW</span></span><input value="0.6">
+      <span>Candle width (mm)</span><input value="16">
+      <span style="color:var(--dim)">…the other candle fields as today</span><span></span>
+    </div>
+    <p class="note">Back text uses the name's font and letter size. Same text on every candle. Hebrew, English or mixed.</p>
+  </div>
+
+  <div class="card">
+    <h2>3. Download: one switch above the button</h2>
+    <div style="margin-bottom:10px; font-size:14px;">3MF as</div>
+    <div class="seg"><span class="on">Separate objects</span><span>One object</span></div>
+    <div style="margin-top:12px"><button class="primary">Download 3MF</button></div>
+    <p class="note"><b>Separate objects</b> (default): each tag is its own object in Bambu, with parts Base, Letters, Back text. Move, turn or delete one alone.<br><b>One object</b>: as today, one object per bed.<br>Remembered for next time. In the EXE the same switch sits in the Export dialog.</p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>4. Arrange menu: "Fill the bed", 40 candles on a 256 × 256 bed</h2>
+  <div class="row" style="align-items:flex-start">
+    <div class="menu" style="flex:0 0 300px">
+      <div style="font-weight:600; margin-bottom:8px">Arrange on the plate</div>
+      <div class="grid">
+        <label>Shape<select><option>Fill the bed</option><option>Columns</option><option>One row</option><option>One column</option><option>Square</option></select></label>
+        <label>Order<select><option>As listed</option></select></label>
+        <label style="grid-column:1/3">Gap (mm)<input value="5"></label>
+        <label>Plate width (mm)<input value="256"></label>
+        <label>Plate depth (mm)<input value="256"></label>
+      </div>
+      <p class="note">"Fill the bed" is new, first in the list. "Columns" is the current "Fit plate".</p>
+    </div>
+    <div style="flex:1 1 500px">
+      <svg id="beds" viewBox="0 0 620 300" width="100%" role="img" aria-label="Two beds in the preview"></svg>
+      <div class="status">40 candles · 2 beds · 36 on bed 1, 4 on bed 2</div>
+      <p class="note">Tags are turned 90° where that fits more on the bed. In the 3MF, bed 1 and bed 2 become Bambu plates 1 and 2. The red "Does not fit the plate" warning is not shown for this shape (only when one tag is bigger than the bed).</p>
+    </div>
+  </div>
+</div>
+</main>
+<script>
+const NS = "http://www.w3.org/2000/svg";
+function el(svg, tag, attrs, text) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text) e.textContent = text; svg.appendChild(e); return e; }
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const B = css("--base"), R = css("--raised"), K = css("--back"), P = css("--plate");
+
+// Candle outline, top of body at y0, centre x, scale s px/mm, body length L mm.
+function candle(svg, x, y0, s, L, opts) {
+  const w = 16 * s, g = el(svg, "g", {});
+  // tab with hole at the bottom
+  el(g, "circle", { cx:x, cy:y0 + L*s + 3.5*s, r:5*s, fill:B });
+  el(g, "rect", { x:x - w/2, y:y0, width:w, height:L*s, rx:2*s, fill:B });
+  el(g, "circle", { cx:x, cy:y0 + L*s + 3.5*s, r:2*s, fill:css("--card") });
+  // flame
+  const fr = 0.6*16*s, cy = y0 - Math.sqrt(0.36-0.1225)*16*s;
+  el(g, "path", { d:`M ${x-fr} ${cy} A ${fr} ${fr} 0 0 0 ${x+fr} ${cy} L ${x} ${y0-1.3*16*s} Z`, fill:B });
+  if (opts.inlay) el(g, "path", { d:`M ${x-fr+1.5*s} ${cy} A ${fr-1.5*s} ${fr-1.5*s} 0 0 0 ${x+fr-1.5*s} ${cy} L ${x} ${y0-1.3*16*s+3*s} Z`, fill:R });
+  if (opts.text) {
+    const t = el(g, "text", { x:0, y:0, fill:opts.colour, "font-size":11.2*s, "font-weight":700, "text-anchor":"middle", "dominant-baseline":"central", direction:"rtl" }, opts.text);
+    const mid = y0 + L*s/2;
+    t.setAttribute("transform", `translate(${x} ${mid}) rotate(${opts.rot}) ${opts.mirror ? "scale(-1 1)" : ""}`);
+  }
+  return g;
+}
+
+const c = document.getElementById("candles"), s = 4, L = 66, y0c = 130;
+candle(c, 120, y0c, s, L, { inlay:true, text:"נוי", colour:R, rot:90 });
+el(c, "text", { x:120, y:20, class:"capb", "text-anchor":"middle" }, "A. Top (name)");
+el(c, "text", { x:120, y:38, class:"cap", "text-anchor":"middle" }, "as today, body 66 mm");
+
+
+candle(c, 360, y0c, s, L, { inlay:false, text:"חנוכה שמח", colour:K, rot:-90 }).setAttribute("transform", "");
+el(c, "text", { x:360, y:20, class:"capb", "text-anchor":"middle" }, "B. Bottom, candle turned over");
+el(c, "text", { x:360, y:38, class:"cap", "text-anchor":"middle" }, "reads normally");
+
+// Side cut
+const sx = 700, sy = 250, k = 40; // 40 px per mm vertically, horizontal shortened
+el(c, "text", { x:sx-60, y:20, class:"capb" }, "C. Side cut through the candle (not to scale)");
+el(c, "rect", { x:sx, y:sy - 3*k, width:320, height:2*k, fill:B });
+el(c, "rect", { x:sx+60, y:sy - 3*k - 1*k, width:90, height:1*k, fill:R });
+el(c, "rect", { x:sx+170, y:sy - 3*k - 1*k, width:60, height:1*k, fill:R });
+el(c, "rect", { x:sx+40, y:sy - 1*k - 0.6*k, width:110, height:0.6*k, fill:K });
+el(c, "rect", { x:sx+180, y:sy - 1*k - 0.6*k, width:90, height:0.6*k, fill:K });
+el(c, "line", { x1:sx-20, y1:sy - 1*k, x2:sx+340, y2:sy - 1*k, stroke:P, "stroke-width":6 });
+el(c, "text", { x:sx+340, y:sy - 1*k + 22, class:"cap", "text-anchor":"end" }, "print bed");
+el(c, "text", { x:sx-8, y:sy - 2*k - 18, class:"cap", "text-anchor":"end" }, "base 2");
+el(c, "text", { x:sx-8, y:sy - 3*k - 12, class:"cap", "text-anchor":"end" }, "name 1");
+el(c, "text", { x:sx-8, y:sy - 1*k - 8, class:"cap", "text-anchor":"end" }, "back 0.6");
+el(c, "text", { x:sx, y:sy + 40, class:"cap" }, "Bottom stays flat: back text fills a pocket");
+el(c, "text", { x:sx, y:sy + 58, class:"cap" }, "cut into the base, flush with it.");
+
+// Beds
+const b = document.getElementById("beds"), bs = 1.05, bw = 256*bs;
+function bed(x, label) { el(b, "rect", { x, y:24, width:bw, height:bw, rx:6, fill:P }); el(b, "text", { x:x + bw/2, y:16, class:"capb", "text-anchor":"middle" }, label); }
+bed(10, "Bed 1"); bed(10 + bw + 40, "Bed 2");
+function tag(x, y, w, h) { el(b, "rect", { x, y, width:w*bs, height:h*bs, rx:2, fill:B }); el(b, "rect", { x:x + (w*bs)*0.3, y:y + (h*bs)*0.3, width:(w*bs)*0.4, height:(h*bs)*0.4, rx:1, fill:R }); }
+// candles 19 x 72: three rows of 11 upright, then a turned row of 3 along the bottom
+for (let r = 0; r < 3; r++) for (let i = 0; i < 11; i++) tag(10 + 4 + i*(19+4)*bs, 24 + 4 + r*77*bs, 19, 72);
+for (let i = 0; i < 3; i++) tag(10 + 4 + i*77*bs, 24 + 4 + 231*bs, 72, 19);
+for (let i = 0; i < 4; i++) tag(10 + bw + 40 + 4 + i*(19+4)*bs, 24 + 4, 19, 72);
+</script>
+</body>
+</html>

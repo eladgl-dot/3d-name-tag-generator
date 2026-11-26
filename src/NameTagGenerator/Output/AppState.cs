@@ -14,6 +14,8 @@ public sealed class AppState
     public ArrangeSettings Arrange { get; set; } = new();
     public string BaseColour { get; set; } = Views.PreviewBuilder.DefaultBaseColour;
     public string LetterColour { get; set; } = Views.PreviewBuilder.DefaultLetterColour;
+    /// <summary>3MF: every tag its own object (true), or one object per bed.</summary>
+    public bool SeparateObjects { get; set; } = true;
 
     static string FilePath => Path.Combine(FontCatalog.AppDataFolder, "settings.json");
 

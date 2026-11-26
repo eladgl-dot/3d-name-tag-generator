@@ -138,6 +138,14 @@
         </CheckBox>
     </DataTemplate>
 
+    <DataTemplate DataType="{x:Type vm:TextFieldVm}">
+        <StackPanel Margin="{StaticResource FieldGap}">
+            <TextBlock Style="{StaticResource FieldLabel}" Text="{Binding Label}" ToolTip="{Binding Label}" />
+            <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="{Binding Label}"
+                     FlowDirection="{Binding Text, Converter={StaticResource TextFlow}}" ToolTip="Empty = none" />
+        </StackPanel>
+    </DataTemplate>
+
     <DataTemplate DataType="{x:Type vm:ChoiceFieldVm}">
         <StackPanel Margin="{StaticResource FieldGap}">
             <TextBlock Style="{StaticResource FieldLabel}" Text="{Binding Label}" ToolTip="{Binding Label}" />

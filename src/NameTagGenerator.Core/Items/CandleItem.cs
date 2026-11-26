@@ -4,13 +4,16 @@ using NameTagGenerator.Text;
 
 namespace NameTagGenerator.Items;
 
-/// <summary>Sizes the candle came out at, in mm. NameLength is the name's ink along the body.</summary>
-public sealed record CandleLayout(double Width, double LetterSize, double BodyLength, double NameLength);
+/// <summary>Sizes the candle came out at, in mm. NameLength and BackLength are the ink along the body (0 without back text).</summary>
+public sealed record CandleLayout(double Width, double LetterSize, double BodyLength, double NameLength, double BackLength = 0);
 
 /// <summary>
 /// Hanukkah candle keychain, printed flat: the name runs along an upright body, first letter by the flame.
 /// Base colour: body, flame and ring. Raised colour: the name and a big flame inlay, both the same height.
 /// Unlike the other items, a name too long for the longest body makes the letters and the candle smaller together.
+/// Optional back text: the same on every candle, a third part sunk into the bottom and mirrored, so it reads
+/// correctly when the candle is turned over. Like the name, its first letter is by the flame (each text by its own
+/// direction, so Hebrew and English both start at the flame). The longer of name and back text sets the body length.
 /// </summary>
 public sealed class CandleItem : IItemType
 {
@@ -37,6 +40,9 @@ public sealed class CandleItem : IItemType
     {
         new Field(Keys.CandleRing, "Ring position", FieldKind.Choice, Choices: new[] { "Bottom tab", "Under the flame", "Top of the flame", "No hole" }),
         new Field(Keys.ReadUp, "Read upward", FieldKind.Toggle),
+        new Field(Keys.BackText, "Back text", FieldKind.Text),
+        new Field(Keys.BackFlip, "Flip back text", FieldKind.Toggle),
+        new Field(Keys.BackDepth, "Back depth (mm)", Min: 0.2, Step: 0.1),
         new Field(Keys.CandleWidth, "Candle width (mm)", Min: 5, Step: 0.5),
         new Field(Keys.LetterFill, "Letter size (% of width)", Min: 20, Step: 5),
         new Field(Keys.MinLetters, "Smallest letters (mm)", Min: 2, Step: 0.5),
@@ -52,7 +58,10 @@ public sealed class CandleItem : IItemType
         [Keys.FontSize] = 10, [Keys.BaseHeight] = 2, [Keys.LetterHeight] = 1, [Keys.Outline] = 0, [Keys.Weight] = 0, [Keys.ConnectorOutline] = 0, [Keys.FillGaps] = 0,
         [Keys.CandleRing] = 0, [Keys.ReadUp] = 0, [Keys.CandleWidth] = 16, [Keys.LetterFill] = 70, [Keys.MinLetters] = 7,
         [Keys.MinLength] = 45, [Keys.MaxLength] = 85, [Keys.EndMargin] = 6, [Keys.FlameRim] = 1.5, [Keys.RingHole] = 4,
+        [Keys.BackDepth] = 0.6, [Keys.BackFlip] = 0,
     };
+
+    static readonly IReadOnlyDictionary<string, TextShape> NoTexts = new Dictionary<string, TextShape>();
 
     public IReadOnlyCollection<string> HiddenCommonFields { get; } = new[] { Keys.FontSize, Keys.Outline, Keys.FillGaps };
 
@@ -63,11 +72,14 @@ public sealed class CandleItem : IItemType
         return v is UnderFlame or TopOfFlame or NoHole ? (int)v : BottomTab;
     }
 
-    public static CandleLayout Measure(TextShape text, ItemSettings s) => Plan(text, s).Layout;
+    /// <param name="back">The back text drawn in the name's font, or null for none.</param>
+    public static CandleLayout Measure(TextShape text, ItemSettings s, TextShape? back = null) => Plan(text, s, back).Layout;
 
-    public ItemModel Build(TextShape text, ItemSettings s)
+    public ItemModel Build(TextShape text, ItemSettings s) => Build(text, s, NoTexts);
+
+    public ItemModel Build(TextShape text, ItemSettings s, IReadOnlyDictionary<string, TextShape> texts)
     {
-        var (layout, name, hole, holeY) = Plan(text, s);
+        var (layout, name, backText, hole, holeY) = Plan(text, s, texts.GetValueOrDefault(Keys.BackText));
         double w = layout.Width, body = layout.BodyLength;
         var ring = Ring(s);
 
@@ -85,17 +97,44 @@ public sealed class CandleItem : IItemType
         var (letters, baseText) = TagAreas.Build(name, s);
         var baseArea = Poly.Union(Poly.Union(bodyArea, flame), baseText);
         var raised = Poly.Union(letters, inlay);
-        if (ring == NoHole) return TagAreas.Solid(baseArea, raised, s);
+        var back = backText is null ? null : Poly.Inflate(backText.Letters, Math.Max(0, s[Keys.Weight]));
+        var depth = s[Keys.BackDepth];
+        if (ring == NoHole) return TagAreas.Solid(baseArea, raised, s, null, back, depth);
 
         if (ring == BottomTab) baseArea = Poly.Union(baseArea, new Paths64 { Poly.Circle(0, holeY, hole + 2 * RingWall) });
         if (ring == TopOfFlame) baseArea = Poly.Union(baseArea, new Paths64 { Poly.Circle(0, holeY, hole + 2 * LoopWall) });
         baseArea = Poly.Difference(baseArea, new Paths64 { Poly.Circle(0, holeY, hole) });
-        raised = Poly.Difference(raised, new Paths64 { Poly.Circle(0, holeY, hole + 2 * HoleClearance) });
-        return TagAreas.Solid(baseArea, raised, s, new Point64(0, Poly.U(holeY)));
+        var clear = new Paths64 { Poly.Circle(0, holeY, hole + 2 * HoleClearance) };
+        raised = Poly.Difference(raised, clear);
+        if (back is not null) back = Poly.Difference(back, clear);
+        return TagAreas.Solid(baseArea, raised, s, new Point64(0, Poly.U(holeY)), back, depth);
     }
 
-    /// <summary>Works out the candle's size and places the name on it, turned to run along the body.</summary>
-    static (CandleLayout Layout, TextShape Name, double Hole, double HoleY) Plan(TextShape text, ItemSettings s)
+    /// <summary>A text's size per mm of letter size, so it does not change as the text is scaled.</summary>
+    /// <param name="Low">Lowest tail across the candle, from the middle of the plain letters (High: highest).</param>
+    sealed record Ink(Box Box, double Mid, double Band, double Low, double High, double Length, bool Empty)
+    {
+        public double Span => High - Low;
+    }
+
+    static Ink Inspect(TextShape text)
+    {
+        var ink = Poly.Union(text.Letters, text.Connector);
+        var box = ink.Count == 0 ? new Box(0, 0, 0, 0) : Poly.Bounds(ink);
+        // "Letter size" is the height of a plain letter in this font (ה or H), so it means the same in every font.
+        var (bandLow, bandHigh) = text.LetterBand ?? (box.MinY, box.MaxY);
+        var band = Poly.Mm(Math.Max(1, bandHigh - bandLow));
+        var mid = (bandLow + bandHigh) / 2.0;
+        // Across the candle the plain letters are centred; tails (ל, ק, g) reach Low / High.
+        if (ink.Count == 0) return new Ink(box, mid, band, 0, 0, 0, true);
+        return new Ink(box, mid, band,
+            Math.Min(-0.5, (box.MinY - mid) / Poly.Scale / band),
+            Math.Max(0.5, (box.MaxY - mid) / Poly.Scale / band),
+            Poly.Mm(box.Width) / band, false);
+    }
+
+    /// <summary>Works out the candle's size and places the name (and back text) on it, turned to run along the body.</summary>
+    static (CandleLayout Layout, TextShape Name, TextShape? Back, double Hole, double HoleY) Plan(TextShape text, ItemSettings s, TextShape? backText)
     {
         double margin = Math.Max(SideRim, s[Keys.EndMargin]), weight = Math.Max(0, s[Keys.Weight]);
         var sideRims = 2 * (SideRim + weight);
@@ -108,24 +147,13 @@ public sealed class CandleItem : IItemType
         // Room the hole takes at the top of the body. Worked out at the full width, which needs the most.
         var reserve = ringOnTop ? HoleGap(w0) + s[Keys.RingHole] + HoleClearance : 0;
 
-        var ink = Poly.Union(text.Letters, text.Connector);
-        var box = ink.Count == 0 ? new Box(0, 0, 0, 0) : Poly.Bounds(ink);
-        // "Letter size" is the height of a plain letter in this font (ה or H), so it means the same in every font.
-        var (bandLow, bandHigh) = text.LetterBand ?? (box.MinY, box.MaxY);
-        var bandHeight = Math.Max(1, bandHigh - bandLow);
-        var band = Poly.Mm(bandHeight);
-        var mid = (bandLow + bandHigh) / 2.0;
+        var nameInk = Inspect(text);
+        var backInk = backText is null ? null : Inspect(backText);
+        if (backInk is { Empty: true }) (backText, backInk) = (null, null);
 
-        // Everything below is per mm of letter size, so it does not change as the name is scaled.
-        // Across the candle the plain letters are centred; tails (ל, ק, g) reach lowPerMm / highPerMm.
-        double lowPerMm = 0, highPerMm = 0, lengthPerMm = 0;
-        if (ink.Count > 0)
-        {
-            lowPerMm = Math.Min(-0.5, (box.MinY - mid) / Poly.Scale / band);
-            highPerMm = Math.Max(0.5, (box.MaxY - mid) / Poly.Scale / band);
-            lengthPerMm = Poly.Mm(box.Width) / band;
-        }
-        var spanPerMm = highPerMm - lowPerMm;
+        // Both texts share one letter size: the longer one sets the length, the one with bigger tails the width.
+        var lengthPerMm = Math.Max(nameInk.Length, backInk?.Length ?? 0);
+        var spanPerMm = Math.Max(nameInk.Span, backInk?.Span ?? 0);
         // Letters fill their share of the width, unless a tail would then come closer than SideRim to the side.
         double LetterFor(double width) => Math.Max(0.1, Math.Min(width * fill, (width - sideRims) / spanPerMm));
 
@@ -144,37 +172,47 @@ public sealed class CandleItem : IItemType
             }
         }
 
-        // Move the name across only as far as its tails need.
         var half = Math.Max(0, width / 2 - SideRim - weight);
-        double lo = lowPerMm * letter, hi = highPerMm * letter, offset = 0;
-        if (hi > half) offset = half - hi;
-        else if (lo < -half) offset = -half - lo;
-
-        var k = letter / band;
-        var nameLength = lengthPerMm * letter + (ink.Count > 0 ? 2 * weight : 0);
-        var bodyLength = Math.Max(s[Keys.MinLength], nameLength + 2 * margin + reserve);
+        double Length(Ink ink) => ink.Empty ? 0 : ink.Length * letter + 2 * weight;
+        var nameLength = Length(nameInk);
+        var backLength = backInk is null ? 0 : Length(backInk);
+        var bodyLength = Math.Max(s[Keys.MinLength], Math.Max(nameLength, backLength) + 2 * margin + reserve);
+        var centre = Poly.U(-(reserve + (bodyLength - reserve) / 2));
+        var readUp = s[Keys.ReadUp] != 0;
 
         // Scale, centre (along: on the ink; across: on the letter band), then turn so the first letter is at the top.
-        var firstOnRight = text.RightToLeft != (s[Keys.ReadUp] != 0);
-        Paths64 Place(Paths64 area)
+        // Mirrored: as seen from below. Flipped: half a turn on the bed, so the first letter goes to the bottom.
+        TextShape Place(TextShape t, Ink ink, bool mirrored, bool flipped)
         {
-            if (area.Count == 0) return area;
-            var dx = -(box.MinX + box.MaxX) / 2.0;
-            var dy = -mid;
-            var nameCentre = -(reserve + (bodyLength - reserve) / 2);
-            var placed = new Paths64(area.Select(path => new Path64(path.Select(p =>
+            // Move the text across only as far as its tails need.
+            double lo = ink.Low * letter, hi = ink.High * letter, offset = 0;
+            if (hi > half) offset = half - hi;
+            else if (lo < -half) offset = -half - lo;
+            var k = letter / ink.Band;
+            var firstOnRight = t.RightToLeft != readUp;
+            var dx = -(ink.Box.MinX + ink.Box.MaxX) / 2.0;
+            Paths64 Move(Paths64 area)
             {
-                var x = (p.X + dx) * k;
-                var y = (p.Y + dy) * k + Poly.U(offset);
-                // First letter on the right: turn a quarter anticlockwise, so the right end goes up. Otherwise clockwise.
-                return firstOnRight
-                    ? new Point64((long)Math.Round(-y), (long)Math.Round(x) + Poly.U(nameCentre))
-                    : new Point64((long)Math.Round(y), (long)Math.Round(-x) + Poly.U(nameCentre));
-            }))));
-            return placed;
+                if (area.Count == 0) return area;
+                var placed = new Paths64(area.Select(path => new Path64(path.Select(p =>
+                {
+                    var x = (p.X + dx) * k;
+                    var y = (p.Y - ink.Mid) * k + Poly.U(offset);
+                    // First letter on the right: turn a quarter anticlockwise, so the right end goes up. Otherwise clockwise.
+                    var px = firstOnRight ? (long)Math.Round(-y) : (long)Math.Round(y);
+                    var py = (firstOnRight ? (long)Math.Round(x) : (long)Math.Round(-x)) + centre;
+                    if (mirrored) px = -px;
+                    if (flipped) (px, py) = (-px, 2 * centre - py);
+                    return new Point64(px, py);
+                }))));
+                // A mirror image runs the other way round; turn the outlines back so outer ones stay anticlockwise.
+                return mirrored ? Poly.Reversed(placed) : placed;
+            }
+            return t with { Letters = Move(t.Letters), Connector = Move(t.Connector) };
         }
 
-        var name = text with { Letters = Place(text.Letters), Connector = Place(text.Connector) };
+        var name = Place(text, nameInk, false, false);
+        var back = backText is null ? null : Place(backText, backInk!, true, s[Keys.BackFlip] != 0);
         // Ring under the flame: the hole keeps a wall on each side. Bottom tab: the tab grows with the hole.
         // Loop on top: the hole starts just above the flame's tip, and the loop's wall reaches down into the tip.
         var hole = ringOnTop ? Math.Min(s[Keys.RingHole], width - 2 * HoleSideWall) : s[Keys.RingHole];
@@ -184,6 +222,6 @@ public sealed class CandleItem : IItemType
             TopOfFlame => 1.3 * width + LoopLift + hole / 2,
             _ => -bodyLength - (hole / 2 + RingWall - RingOverlap),
         };
-        return (new CandleLayout(width, letter, bodyLength, nameLength), name, hole, holeY);
+        return (new CandleLayout(width, letter, bodyLength, nameLength, backLength), name, back, hole, holeY);
     }
 }

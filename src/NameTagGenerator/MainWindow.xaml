@@ -154,7 +154,8 @@
                             <Border Style="{StaticResource FloatingPanel}" Width="{DynamicResource ArrangeMenuWidth}">
                                 <StackPanel>
                                     <TextBlock Style="{StaticResource SectionHeading}" Text="Arrange on the plate" />
-                                    <UniformGrid Columns="4" Margin="0,0,0,12">
+                                    <UniformGrid Columns="3" Margin="0,0,0,12">
+                                        <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeShape" Content="Fill the bed" IsChecked="{Binding ShapeFillBed}" />
                                         <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeShape" Content="Fit plate" IsChecked="{Binding ShapeFit}" />
                                         <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeShape" Content="One row" IsChecked="{Binding ShapeRow}" />
                                         <RadioButton Style="{StaticResource ChoiceChip}" GroupName="ArrangeShape" Content="One column" IsChecked="{Binding ShapeColumn}" />

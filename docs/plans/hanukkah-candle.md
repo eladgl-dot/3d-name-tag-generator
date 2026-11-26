@@ -85,6 +85,6 @@ Plan: "Ring position" gets two new entries after the existing ones, so saved set
 ### Steps
 - [x] 7. Tests for the new positions: loop above the tip (2 names), no hole (2 names), list order, 3 unusual-settings cases with the loop.
 - [x] 8. Code until they pass. Full suite 1885 pass. Website: loop 19 × 72 mm, no hole 19 × 66 mm for a 45 mm body, both previews correct, 3MF and STL download. Bambu headless: Base (filament 1) and Letters (filament 2), no repairs.
-- [ ] 9. Website check, Bambu headless, `code-reviewer`, help text, push. Done except the push. Review fix: an unknown saved ring value (4, -1, 2.7) now means Bottom tab, as before. Added tests for that, the loop with Text weight and Read upward, the smallest hole, and No hole on a narrow candle. Full suite 1892 pass.
+- [x] 9. Website check, Bambu headless, `code-reviewer`, help text, push. Pushed (c3e314c), live site checked: loop 19 × 72 mm, no hole 19 × 66 mm. Review fix: an unknown saved ring value (4, -1, 2.7) now means Bottom tab, as before. Added tests for that, the loop with Text weight and Read upward, the smallest hole, and No hole on a narrow candle. Full suite 1892 pass.
 
 **Tools I'll use:** `dev-practices` skill for test-first (low), `build-runner` agent for build and tests (low), `ui-check` agent for the website screenshots (med), `rtl-check` agent for Hebrew (low), `code-reviewer` agent before merging (med), `doc-sync` agent for docs (low). Bambu Studio headless from the command line (low).

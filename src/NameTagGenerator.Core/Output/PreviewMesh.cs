@@ -11,7 +11,16 @@ public static class PreviewMesh
 {
     public static PreviewPart Base(IReadOnlyCollection<PlacedTag> tags) => Flatten(tags, m => m.Base);
 
-    public static PreviewPart Letters(IReadOnlyCollection<PlacedTag> tags) => Flatten(tags, m => m.Letters);
+    /// <summary>The letters, and the back text when there is one (it shows from below, in the letter colour).</summary>
+    public static PreviewPart Letters(IReadOnlyCollection<PlacedTag> tags) => Flatten(tags, m => m.Back is null ? m.Letters : Joined(m.Letters, m.Back));
+
+    static Mesh Joined(Mesh a, Mesh b)
+    {
+        var both = new Mesh();
+        both.AddMoved(a, 0, 0);
+        both.AddMoved(b, 0, 0);
+        return both;
+    }
 
     static PreviewPart Flatten(IReadOnlyCollection<PlacedTag> tags, Func<ItemModel, Mesh> pick)
     {

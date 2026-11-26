@@ -17,10 +17,11 @@ public static class Keys
     public const string RimThickness = "rimThickness", CupDiameter = "cupDiameter", GripLength = "gripLength", GripDepthInner = "gripDepthInner", GripDepthOuter = "gripDepthOuter", SlotWall = "slotWall";
     public const string CandleWidth = "candleWidth", LetterFill = "letterFill", MinLetters = "minLetters", MinLength = "minLength", MaxLength = "maxLength";
     public const string EndMargin = "endMargin", FlameRim = "flameRim", ReadUp = "readUp", CandleRing = "candleRing";
+    public const string BackText = "backText", BackDepth = "backDepth", BackFlip = "backFlip";
     public const string StemDiameter = "stemDiameter", StemOpening = "stemOpening", StemWall = "stemWall", StemSide = "stemSide";
 }
 
-public enum FieldKind { Number, Toggle, Choice }
+public enum FieldKind { Number, Toggle, Choice, Text }
 
 /// <summary>One setting shown on screen. The panel is generated from these.</summary>
 public sealed record Field(string Key, string Label, FieldKind Kind = FieldKind.Number, double Min = 0, double Step = 0.5, string[]? Choices = null);
@@ -32,14 +33,21 @@ public sealed class ItemSettings
     public string Connector { get; set; } = "-";
     public bool Hollow { get; set; }
     public Dictionary<string, double> Values { get; set; } = new();
+    /// <summary>Text settings (FieldKind.Text), such as the candle's back text.</summary>
+    public Dictionary<string, string> Texts { get; set; } = new();
 
     public double this[string key] => Values.GetValueOrDefault(key);
+
+    /// <summary>A text setting, or "" when it is not set.</summary>
+    public string Text(string key) => Texts?.GetValueOrDefault(key) ?? "";
 
     public static ItemSettings DefaultsFor(IItemType item) => new() { Values = new Dictionary<string, double>(item.Defaults) };
 
     /// <summary>Moves values saved by older versions to the settings that replaced them.</summary>
     public void Upgrade()
     {
+        // Before 0.2: no text settings.
+        Texts ??= new Dictionary<string, string>();
         // v0.1.2 and earlier: one Grip depth for both cup marker walls.
         if (Values.Remove("gripDepth", out var depth))
         {
@@ -52,8 +60,14 @@ public sealed class ItemSettings
 /// <summary>
 /// A finished item: two closed bodies in the position they print, plus the outlines used to check it.
 /// PreviewFlipped means it prints name side down, so the preview turns it over to show the name.
+/// Back, when there is one, is a third part sunk into the bottom (for example the candle's back text).
 /// </summary>
-public sealed record ItemModel(Mesh Base, Mesh Letters, Paths64 BaseArea, Paths64 LetterArea, Point64? RingHoleCenter, int LooseParts, bool PreviewFlipped = false);
+public sealed record ItemModel(Mesh Base, Mesh Letters, Paths64 BaseArea, Paths64 LetterArea, Point64? RingHoleCenter, int LooseParts, bool PreviewFlipped = false,
+    Mesh? Back = null, Paths64? BackArea = null)
+{
+    /// <summary>Every part, base first, then letters, then the back part when there is one.</summary>
+    public IEnumerable<Mesh> Parts => Back is null ? new[] { Base, Letters } : new[] { Base, Letters, Back };
+}
 
 /// <summary>
 /// One printable item. To add a new item, add one class implementing this:
@@ -67,6 +81,12 @@ public interface IItemType
     IReadOnlyList<Field> Fields { get; }
     IReadOnlyDictionary<string, double> Defaults { get; }
     ItemModel Build(TextShape text, ItemSettings settings);
+
+    /// <summary>
+    /// Builds with the item's text settings (FieldKind.Text) already drawn in the name's font, by key.
+    /// Only non-empty texts are passed. Items without text settings ignore them.
+    /// </summary>
+    ItemModel Build(TextShape text, ItemSettings settings, IReadOnlyDictionary<string, TextShape> texts) => Build(text, settings);
 
     /// <summary>Common settings this item works out by itself, so the panel leaves them out.</summary>
     IReadOnlyCollection<string> HiddenCommonFields => Array.Empty<string>();
@@ -135,16 +155,34 @@ public static class TagAreas
 
     public static long Center(Box b) => -(b.MinX + b.MaxX) / 2;
 
-    public static ItemModel Solid(Paths64 baseArea, Paths64 letterArea, ItemSettings s, Point64? ringHole = null)
+    /// <param name="backArea">A part sunk into the bottom of the base, from the bed up to backDepth. It must lie inside the base.</param>
+    public static ItemModel Solid(Paths64 baseArea, Paths64 letterArea, ItemSettings s, Point64? ringHole = null, Paths64? backArea = null, double backDepth = 0)
     {
         baseArea = Poly.Clean(baseArea);
         letterArea = Poly.Clean(letterArea);
         var baseZ = Poly.U(s[Keys.BaseHeight]);
         var baseMesh = new Mesh();
-        baseMesh.Extrude(baseArea, 0, baseZ);
         var letters = new Mesh();
         letters.Extrude(letterArea, baseZ, baseZ + Poly.U(s[Keys.LetterHeight]));
-        return new ItemModel(baseMesh, letters, baseArea, letterArea, ringHole, Poly.CountIslands(baseArea));
+
+        backArea = backArea is null ? null : Poly.Clean(backArea);
+        // Never through the base: at least 0.2 mm of base stays above the pocket. A base too thin for that gets no back part.
+        var depth = Math.Min(Poly.U(Math.Max(0.1, backDepth)), baseZ - Poly.U(0.2));
+        if (backArea is null || backArea.Count == 0 || depth <= 0)
+        {
+            baseMesh.Extrude(baseArea, 0, baseZ);
+            return new ItemModel(baseMesh, letters, baseArea, letterArea, ringHole, Poly.CountIslands(baseArea));
+        }
+
+        // Base with a pocket in its bottom; the back part fills the pocket exactly, so the bottom stays flat.
+        baseMesh.Walls(baseArea, 0, baseZ);
+        baseMesh.Cap(baseArea, baseZ, facingUp: true);
+        baseMesh.Cap(new Paths64(baseArea.Concat(backArea)), 0, facingUp: false);
+        baseMesh.Walls(Poly.Reversed(backArea), 0, depth);
+        baseMesh.Cap(backArea, depth, facingUp: false);
+        var back = new Mesh();
+        back.Extrude(backArea, 0, depth);
+        return new ItemModel(baseMesh, letters, baseArea, letterArea, ringHole, Poly.CountIslands(baseArea), Back: back, BackArea: backArea);
     }
 }
 

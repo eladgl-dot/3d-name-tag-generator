@@ -16,6 +16,8 @@ public sealed class SiteState
     public string BaseColour { get; set; } = DefaultBaseColour;
     public string LetterColour { get; set; } = DefaultLetterColour;
     public PictureChoice Picture { get; set; } = new();
+    /// <summary>3MF: every tag its own object (true), or one object per bed.</summary>
+    public bool SeparateObjects { get; set; } = true;
 
     [JsonIgnore]
     public List<string> Names => NamesText
@@ -89,6 +91,7 @@ public sealed class SiteState
             if (settings.Font is null || !fontExists(settings.Font)) settings.Font = itemDefaults.Font;
             settings.Connector ??= itemDefaults.Connector;
             settings.Values ??= new Dictionary<string, double>();
+            settings.Texts ??= new Dictionary<string, string>();
             settings.Upgrade();
             var item = ItemRegistry.All.FirstOrDefault(i => i.Id == id);
             if (item is null) continue;
